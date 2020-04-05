@@ -12,7 +12,9 @@ set -e
 
 tar zxf "${BIN_GPDB_DIR}/bin_gpdb.tar.gz" -C /
 
-source "$(< "${BIN_GPDB_DIR}/GPHOME")/greenplum_path.sh"
+GPHOME=$(< "${BIN_GPDB_DIR}/GPHOME")
+sed -ie "s|^GPHOME=.*$|GPHOME=${GPHOME}|" "${GPHOME}/greenplum_path.sh"
+source "${GPHOME}/greenplum_path.sh"
 
 USE_PGXS=1 make -C "${PXF_PROTOCOL_EXTENSION_SRC}" install
 
