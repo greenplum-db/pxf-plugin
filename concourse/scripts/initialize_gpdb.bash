@@ -3,15 +3,13 @@
 set -exuo pipefail
 
 : "${BIN_GPDB_DIR:?BIN_GPDB_DIR must be set}"
-GPHOME=$(< "${BIN_GPDB_DIR}/GPHOME")
-sed -ie "s|^GPHOME=.*$|GPHOME=${GPHOME}|" "${GPHOME}/greenplum_path.sh"
+GPHOME=/usr/local/greenplum-db-devel
+# sed -ie "s|^GPHOME=.*$|GPHOME=${GPHOME}|" "${GPHOME}/greenplum_path.sh"
 PYTHONHOME= source "${GPHOME}/greenplum_path.sh"
 
 # Create config and data dirs.
 data_dirs=( ~gpadmin/data{1..6}/primary )
 dirs=( ~gpadmin/{gpconfigs,data/master} "${data_dirs[@]}" )
-# parent_dirs=( ~gpadmin/{gpconfigs,data{,{1..6}}} )
-# mkdir -p "${dirs[@]}" && chown gpadmin:gpadmin -R "${parent_dirs[@]}"
 mkdir -p "${dirs[@]}"
 
 sed -e "s/MASTER_HOSTNAME=mdw/MASTER_HOSTNAME=\$(hostname -f)/g" \

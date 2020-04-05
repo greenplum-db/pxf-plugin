@@ -3,13 +3,15 @@
 : "${BIN_GPDB_DIR:?BIN_GPDB_DIR must be set}"
 : "${PGPORT:?PGPORT must be set}"
 : "${GROUP:?GROUP must be set}"
-GPHOME=$(< "${BIN_GPDB_DIR}/GPHOME")
+export GPHOME=/usr/local/greenplum-db-devel
 source "${GPHOME}/greenplum_path.sh"
 PXF_HOME=${GPHOME}/pxf
 PXF_CONF_DIR=~gpadmin/pxf
 
-apt update
-apt-get install uuid-runtime
+if grep Ubuntu /etc/os-release >/dev/null; then
+	apt update
+	apt-get install uuid-runtime
+fi
 
 function run_pg_regress() {
 	# run desired groups (below we replace commas with spaces in $GROUPS)

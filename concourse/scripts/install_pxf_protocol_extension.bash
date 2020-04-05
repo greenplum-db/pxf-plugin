@@ -12,8 +12,11 @@ set -e
 
 tar zxf "${BIN_GPDB_DIR}/bin_gpdb.tar.gz" -C /
 
-GPHOME=$(< "${BIN_GPDB_DIR}/GPHOME")
-sed -ie "s|^GPHOME=.*$|GPHOME=${GPHOME}|" "${GPHOME}/greenplum_path.sh"
+GPHOME=/usr/local/greenplum-db-devel
+gphome_orig=$(< "${BIN_GPDB_DIR}/GPHOME")
+[[ -d ${GPHOME} ]] && sudo rm -rf "${GPHOME}"
+sudo cp -r "${gphome_orig%/}" "${GPHOME}"
+# sed -ie "s|^GPHOME=.*$|GPHOME=${GPHOME}|" "${GPHOME}/greenplum_path.sh"
 source "${GPHOME}/greenplum_path.sh"
 
 USE_PGXS=1 make -C "${PXF_PROTOCOL_EXTENSION_SRC}" install
