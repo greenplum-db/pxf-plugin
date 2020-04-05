@@ -3,3 +3,5 @@ regression.out
 
 # Generated subdirectories
 /results/
+src/*.o
+pxf.so
