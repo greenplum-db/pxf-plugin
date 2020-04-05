@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# run as gpadmin
+# can run in centos6 or centos7 environments
 set -e
 
 : "${GPDB_PKG:?GPDB_PKG must be set}"
@@ -38,3 +40,4 @@ for file in "${list_of_pxf_files[@]}"; do
 done
 
 tar zcvf "${BIN_GPDB_DIR}/bin_gpdb.tar.gz" -C "${EXTRACT_DIR}" "${gpdb_home#"${EXTRACT_DIR}"}"
+echo "/${gpdb_home#"${EXTRACT_DIR}"}" > "${BIN_GPDB_DIR}/GPHOME"
