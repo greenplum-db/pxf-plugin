@@ -7,6 +7,8 @@ export GPHOME=/usr/local/greenplum-db-devel
 source "${GPHOME}/greenplum_path.sh"
 PXF_HOME=${GPHOME}/pxf
 PXF_CONF_DIR=~gpadmin/pxf
+GPHD_ROOT=/singlecluster
+JAVA_HOME=$(find /usr/lib/jvm -name 'java-1.8.0-openjdk*' | head -1)
 
 if grep Ubuntu /etc/os-release >/dev/null; then
 	apt update
@@ -15,7 +17,6 @@ fi
 
 function run_pg_regress() {
 	# run desired groups (below we replace commas with spaces in $GROUPS)
-	local GPHD_ROOT=/singlecluster
 	cat > ~gpadmin/run_pxf_automation_test.sh <<-EOF
 		#!/usr/bin/env bash
 		set -euxo pipefail
@@ -27,6 +28,7 @@ function run_pg_regress() {
 		export PGPORT=${PGPORT}
 		export HCFS_CMD=${GPHD_ROOT}/bin/hdfs
 		export HCFS_PROTOCOL=${PROTOCOL}
+		export JAVA_HOME=${JAVA_HOME}
 
 		time make -C ${PWD}/pxf_src/regression ${GROUP//,/ }
 	EOF
@@ -55,39 +57,66 @@ function start_pxf_server() {
 }
 
 function init_and_configure_pxf_server() {
-	local JAVA_HOME
-	JAVA_HOME=$(find /usr/lib/jvm -name 'java-1.8.0-openjdk*' | head -1)
 	echo 'Ensure pxf version can be run before pxf init'
 	su gpadmin -c "${PXF_HOME}/bin/pxf version | grep -E '^PXF version [0-9]+.[0-9]+.[0-9]+$'" || exit 1
 
 	echo 'Initializing PXF service'
 	su gpadmin -c "JAVA_HOME=${JAVA_HOME} PXF_CONF=${PXF_CONF_DIR} ${PXF_HOME}/bin/pxf init"
-}
-
-
-function configure_pxf_default_server() {
 	# copy hadoop config files to PXF_CONF_DIR/servers/default
-	if [[ -d /etc/hadoop/conf/ ]]; then
-		cp /etc/hadoop/conf/*-site.xml "${PXF_CONF_DIR}/servers/default"
-	fi
-	if [[ -d /etc/hive/conf/ ]]; then
-		cp /etc/hive/conf/*-site.xml "${PXF_CONF_DIR}/servers/default"
-	fi
-	if [[ -d /etc/hbase/conf/ ]]; then
-		cp /etc/hbase/conf/*-site.xml "${PXF_CONF_DIR}/servers/default"
-	fi
+	[[ -d /etc/hadoop/conf/ ]] && cp /etc/hadoop/conf/*-site.xml "${PXF_CONF_DIR}/servers/default"
 }
 
-function _main() {
-	install_pxf_server
+function init_hdfs() {
+	local PROXY_USER=gpadmin
 
-	init_and_configure_pxf_server
-
-	configure_pxf_default_server
-
-	start_pxf_server
-
-	time run_pg_regress
+	# set up impersonation
+	echo "Impersonation is enabled, adding support for proxy user ${PROXY_USER}"
+	cat > proxy-config.xml <<-EOF
+		<property>
+		  <name>hadoop.proxyuser.${PROXY_USER}.hosts</name>
+		  <value>*</value>
+		</property>
+		<property>
+		  <name>hadoop.proxyuser.${PROXY_USER}.groups</name>
+		  <value>*</value>
+		</property>
+		<property>
+		  <name>hadoop.security.authorization</name>
+		  <value>true</value>
+		</property>
+		<property>
+		  <name>hbase.security.authorization</name>
+		  <value>true</value>
+		</property>
+		<property>
+		  <name>hbase.rpc.protection</name>
+		  <value>authentication</value>
+		</property>
+		<property>
+		  <name>hbase.coprocessor.master.classes</name>
+		  <value>org.apache.hadoop.hbase.security.access.AccessController</value>
+		</property>
+		<property>
+		  <name>hbase.coprocessor.region.classes</name>
+		  <value>org.apache.hadoop.hbase.security.access.AccessController,org.apache.hadoop.hbase.security.access.SecureBulkLoadEndpoint</value>
+		</property>
+		<property>
+		  <name>hbase.coprocessor.regionserver.classes</name>
+		  <value>org.apache.hadoop.hbase.security.access.AccessController</value>
+		</property>
+	EOF
+	sed -i -e '/<configuration>/r proxy-config.xml' "${GPHD_ROOT}/hadoop/etc/hadoop/core-site.xml"
+	rm proxy-config.xml
+	"${GPHD_ROOT}/bin/init-gphd.sh"
+	"${GPHD_ROOT}/bin/start-hdfs.sh"
 }
 
-_main
+install_pxf_server
+
+init_and_configure_pxf_server
+
+start_pxf_server
+
+JAVA_HOME="${JAVA_HOME}" init_hdfs
+
+time run_pg_regress
