@@ -10,11 +10,6 @@ PXF_CONF_DIR=~gpadmin/pxf
 GPHD_ROOT=/singlecluster
 JAVA_HOME=$(find /usr/lib/jvm -name 'java-1.8.0-openjdk*' | head -1)
 
-if grep Ubuntu /etc/os-release >/dev/null; then
-	apt update
-	apt-get install uuid-runtime
-fi
-
 function run_pg_regress() {
 	# run desired groups (below we replace commas with spaces in $GROUPS)
 	cat > ~gpadmin/run_pxf_automation_test.sh <<-EOF
