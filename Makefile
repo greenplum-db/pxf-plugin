@@ -21,6 +21,4 @@ unittest-check:
 unittest-clean:
 	$(MAKE) -C test clean
 
-clean: unittest-clean
-
 .PHONY: unittest-check unittest-clean
