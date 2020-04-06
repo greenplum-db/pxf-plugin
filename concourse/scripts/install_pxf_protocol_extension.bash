@@ -16,8 +16,11 @@ GPHOME=/usr/local/greenplum-db-devel
 gphome_orig=$(< "${BIN_GPDB_DIR}/GPHOME")
 [[ -d ${GPHOME} ]] && sudo rm -rf "${GPHOME}"
 sudo cp -r "${gphome_orig%/}" "${GPHOME}"
-# sed -ie "s|^GPHOME=.*$|GPHOME=${GPHOME}|" "${GPHOME}/greenplum_path.sh"
+sed -ie "s|^GPHOME=.*$|GPHOME=${GPHOME}|" "${GPHOME}/greenplum_path.sh"
 source "${GPHOME}/greenplum_path.sh"
+if grep 'CentOS release 6' /etc/centos-release >/dev/null; then
+	source /opt/gcc_env.sh
+fi
 
 USE_PGXS=1 make -C "${PXF_PROTOCOL_EXTENSION_SRC}" install
 
