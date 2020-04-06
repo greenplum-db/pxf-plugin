@@ -114,4 +114,4 @@ start_pxf_server
 
 JAVA_HOME="${JAVA_HOME}" init_hdfs
 
-time run_pg_regress
+run_pg_regress
