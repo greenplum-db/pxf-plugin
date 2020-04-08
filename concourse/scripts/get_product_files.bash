@@ -2,7 +2,7 @@
 
 set -e
 : "${PIVNET_API_TOKEN:?PIVNET_API_TOKEN is required}"
-: "${BIN_GPDB_DIR:?BIN_GPDB_DIR is required}"
+: "${GPDB_PKG_DIR:?GPDB_PKG_DIR is required}"
 : "${PRODUCT_SLUG:?PRODUCT_SLUG is required}"
 
 mkdir -p /tmp/pivnet_cli
@@ -29,7 +29,7 @@ for file in "${product_files[@]}"; do
 	id=$(jq <<< "${product_files_json}" -r --arg object_key "${file}" '.[] | select(.aws_object_key == $object_key).id')
 	echo "Downloading ${file} with id ${id}..."
 	pivnet download-product-files \
-		"--download-dir=${BIN_GPDB_DIR}" \
+		"--download-dir=${GPDB_PKG_DIR}" \
 		"--product-slug=${PRODUCT_SLUG}" \
 		"--release-version=${version}" \
 		"--product-file-id=${id}" >/dev/null 2>&1 &
