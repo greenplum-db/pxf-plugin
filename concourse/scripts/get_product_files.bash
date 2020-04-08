@@ -35,11 +35,12 @@ product_files=(
 
 product_files_json=$(pivnet --format=json product-files "--product-slug=${PRODUCT_SLUG}" --release-version "${version}")
 for file in "${product_files[@]}"; do
+	file=${file##*/}
 	sha256=$(jq <<< "${product_files_json}" -r --arg object_key "${file}" '.[] | select(.aws_object_key == $object_key).sha256')
 	if [[ -e ${GPDB_PKG_DIR}/${version}/${file} ]]; then
 		echo "Found file ${GPDB_PKG_DIR}/${version}/${file}, checking sha256sum..."
 		sum=$(sha256sum "${GPDB_PKG_DIR}/${version}/${file}" | cut -d' ' -f1)
-		if [[ ${sum} == ${sha256%sha256=} ]]; then
+		if [[ ${sum} == ${sha256} ]]; then
 			echo "Sum is equivalent, skipping download of ${file}..."
 			continue
 		fi
