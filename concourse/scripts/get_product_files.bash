@@ -6,7 +6,8 @@ set -e
 : "${PRODUCT_SLUG:?PRODUCT_SLUG is required}"
 
 mkdir -p /tmp/pivnet_cli
-wget https://github.com/pivotal-cf/pivnet-cli/releases/download/v1.0.2/pivnet-linux-amd64-1.0.2 -O /tmp/pivnet_cli/pivnet
+latest_pivnet_cli_tag=$(curl --silent "https://api.github.com/repos/pivotal-cf/pivnet-cli/releases/latest" | jq -r .tag_name)
+wget "https://github.com/pivotal-cf/pivnet-cli/releases/download/${latest_pivnet_cli_tag}/pivnet-linux-amd64-${latest_pivnet_cli_tag#v}" -O /tmp/pivnet_cli/pivnet
 chmod +x /tmp/pivnet_cli/pivnet
 PATH=/tmp/pivnet_cli:${PATH}
 
