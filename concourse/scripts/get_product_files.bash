@@ -5,6 +5,12 @@ set -e
 : "${GPDB_PKG_DIR:?GPDB_PKG_DIR is required}"
 : "${PRODUCT_SLUG:?PRODUCT_SLUG is required}"
 
+if [[ -e "${GPDB_PKG_DIR}/gpdb_pkg.tar.gz" ]]; then
+	echo "Found ${GPDB_PKG_DIR}/gpdb_pkg.tar.gz..."
+	tar zxf "${GPDB_PKG_DIR}/gpdb_pkg.tar.gz" -C "${GPDB_PKG_DIR}"
+fi
+
+artifact_is_new=false
 pivnet_cli_repo=pivotal-cf/pivnet-cli
 path_to_pivnet_cli=${GPDB_PKG_DIR}/${pivnet_cli_repo}
 mkdir -p "${path_to_pivnet_cli}"
@@ -17,6 +23,7 @@ else
 	echo "Downloading version ${latest_pivnet_cli_tag} of pivnet-cli..."
 	wget -q "https://github.com/${pivnet_cli_repo}/releases/download/${latest_pivnet_cli_tag}/pivnet-linux-amd64-${latest_pivnet_cli_tag#v}" -O "${path_to_pivnet_cli}/pivnet"
 	chmod +x "${path_to_pivnet_cli}/pivnet"
+	artifact_is_new=true
 fi
 
 # log in to pivnet
@@ -54,6 +61,12 @@ for file in "${product_files[@]}"; do
 		"--release-version=${version}" \
 		"--product-file-id=${id}" >/dev/null 2>&1 &
 	pids+=( $! )
+	artifact_is_new=true
 done
 
 wait "${pids[@]}"
+
+if [[ ${artifact_is_new} == true ]]; then
+	echo "Detected changes in artifacts, creating new tar ball..."
+	tar zcf "${GPDB_PKG_DIR}/gpdb_pkg.tar.gz" -C "${GPDB_PKG_DIR}" "${version}" "pivotal-cf"
+fi

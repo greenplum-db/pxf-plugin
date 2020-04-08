@@ -26,19 +26,41 @@ resources:
     repository: pivotaldata/gpdb-pxf-dev
     tag: centos7-hdp2-server
 
+- name: gpdb_pkg
+  type: gcs
+  source:
+    bucket: data-gpdb-ud-pivnet-artifacts
+    json_key: ((data-gpdb-ud-google-json-key))
+    versioned_file: gpdb_pkg.tar.gz
+
 ## ======================================================================
 ## JOBS
 ## ======================================================================
 jobs:
-- name: Test PXF Protocol Extension
+- name: Get Greenplum Product Files
   plan:
   - in_parallel:
     - get: pxf-protocol-extension_src
       trigger: true
     - get: gpdb-pxf-dev-centos7-hdp2-server
+    - get: gpdb_pkg
   - task: Get Greenplum Product Files
     # this task will fail on centos6
     image: gpdb-pxf-dev-centos7-hdp2-server
     file: pxf-protocol-extension_src/concourse/tasks/get_product_files.yml
     params:
       PIVNET_API_TOKEN: {{public_pivnet_refresh_token}}
+      GPDB_PKG_DIR: gpdb_pkg
+  - put: gpdb_pkg
+    params:
+      file: gpdb_pkg/gpdb_pkg.tar.gz
+
+- name: Test PXF Protocol Extension
+  plan:
+  - in_parallel:
+    - get: pxf-protocol-extension_src
+      trigger: true
+    - get: gpdb-pxf-dev-centos7-hdp2-server
+    - get: gpdb_pkg
+      trigger: true
+      passed: Get Greenplum Product Files

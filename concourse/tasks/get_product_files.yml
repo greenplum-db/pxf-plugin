@@ -5,13 +5,14 @@ image_resource:
 
 inputs:
 - name: pxf-protocol-extension_src
+- name: gpdb_pkg
 
 outputs:
 - name: gpdb_pkg
 
 params:
   PIVNET_API_TOKEN:
-  GPDB_PKG_DIR: gpdb_pkg
+  GPDB_PKG_DIR:
   PRODUCT_SLUG: pivotal-gpdb
 
 run:
