@@ -1,0 +1,18 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+
+inputs:
+- name: pxf-protocol-extension_src
+
+outputs:
+- name: gpdb_pkg
+
+params:
+  PIVNET_API_TOKEN:
+  GPDB_PKG_DIR: gpdb_pkg
+  PRODUCT_SLUG: pivotal-gpdb
+
+run:
+  path: pxf-protocol-extension_src/concourse/scripts/get_product_files.bash

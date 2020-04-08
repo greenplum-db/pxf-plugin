@@ -1,0 +1,44 @@
+---
+resource_types:
+- name: gcs
+  type: docker-image
+  source:
+    repository: frodenas/gcs-resource
+
+- name: pivnet
+  type: docker-image
+  source:
+    repository: pivotalcf/pivnet-resource
+    tag: latest-final
+
+resources:
+
+- name: pxf-protocol-extension_src
+  type: git
+  source:
+    branch: {{pxf-protocol-extension-git-branch}}
+    uri: {{pxf-protocol-extension-git-remote}}
+    private_key: ((ccp-git-key))
+
+- name: gpdb-pxf-dev-centos7-hdp2-server
+  type: docker-image
+  source:
+    repository: pivotaldata/gpdb-pxf-dev
+    tag: centos7-hdp2-server
+
+## ======================================================================
+## JOBS
+## ======================================================================
+jobs:
+- name: Test PXF Protocol Extension
+  plan:
+  - in_parallel:
+    - get: pxf-protocol-extension_src
+      trigger: true
+    - get: gpdb-pxf-dev-centos7-hdp2-server
+  - task: Get Greenplum Product Files
+    # this task will fail on centos6
+    image: gpdb-pxf-dev-centos7-hdp2-server
+    file: pxf-protocol-extension_src/concourse/tasks/get_product_files.yml
+    params:
+      PIVNET_API_TOKEN: {{public_pivnet_refresh_token}}
