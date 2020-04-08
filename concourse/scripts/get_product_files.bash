@@ -12,9 +12,9 @@ PATH=${path_to_pivnet_cli}:${PATH}
 
 latest_pivnet_cli_tag=$(curl --silent "https://api.github.com/repos/${pivnet_cli_repo}/releases/latest" | jq -r .tag_name)
 if [[ -e ${path_to_pivnet_cli}/pivnet && ${latest_pivnet_cli_tag} =~ $(pivnet --version) ]]; then
-	echo "Already have version ${version} of pivnet-cli, skipping download..."
+	echo "Already have version ${latest_pivnet_cli_tag} of pivnet-cli, skipping download..."
 else
-	echo "Downloading version ${version} of pivnet-cli..."
+	echo "Downloading version ${latest_pivnet_cli_tag} of pivnet-cli..."
 	wget -q "https://github.com/${pivnet_cli_repo}/releases/download/${latest_pivnet_cli_tag}/pivnet-linux-amd64-${latest_pivnet_cli_tag#v}" -O "${path_to_pivnet_cli}/pivnet"
 	chmod +x "${path_to_pivnet_cli}/pivnet"
 fi
