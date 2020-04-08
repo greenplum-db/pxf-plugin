@@ -5,11 +5,14 @@ set -e
 : "${GPDB_PKG_DIR:?GPDB_PKG_DIR is required}"
 : "${PRODUCT_SLUG:?PRODUCT_SLUG is required}"
 
-mkdir -p /tmp/pivnet_cli
-latest_pivnet_cli_tag=$(curl --silent "https://api.github.com/repos/pivotal-cf/pivnet-cli/releases/latest" | jq -r .tag_name)
-wget "https://github.com/pivotal-cf/pivnet-cli/releases/download/${latest_pivnet_cli_tag}/pivnet-linux-amd64-${latest_pivnet_cli_tag#v}" -O /tmp/pivnet_cli/pivnet
-chmod +x /tmp/pivnet_cli/pivnet
-PATH=/tmp/pivnet_cli:${PATH}
+pivnet_cli_repo=pivotal-cf/pivnet-cli
+path_to_pivnet_cli=/tmp/${pivnet_cli_repo}
+mkdir -p "${path_to_pivnet_cli}"
+PATH=${path_to_pivnet_cli}:${PATH}
+
+latest_pivnet_cli_tag=$(curl --silent "https://api.github.com/repos/${pivnet_cli_repo}/releases/latest" | jq -r .tag_name)
+wget "https://github.com/${pivnet_cli_repo}/releases/download/${latest_pivnet_cli_tag}/pivnet-linux-amd64-${latest_pivnet_cli_tag#v}" -O "${path_to_pivnet_cli}/pivnet"
+chmod +x "${path_to_pivnet_cli}/pivnet"
 
 # log in to pivnet
 pivnet login "--api-token=${PIVNET_API_TOKEN}"
