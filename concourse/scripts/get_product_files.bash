@@ -5,6 +5,11 @@ set -e
 : "${BIN_GPDB_DIR:?BIN_GPDB_DIR is required}"
 : "${PRODUCT_SLUG:?PRODUCT_SLUG is required}"
 
+mkdir -p /tmp/pivnet_cli
+wget https://github.com/pivotal-cf/pivnet-cli/releases/download/v1.0.2/pivnet-linux-amd64-1.0.2 -O /tmp/pivnet_cli/pivnet
+chmod +x /tmp/pivnet_cli/pivnet
+PATH=/tmp/pivnet_cli:${PATH}
+
 # log in to pivnet
 pivnet login "--api-token=${PIVNET_API_TOKEN}"
 
