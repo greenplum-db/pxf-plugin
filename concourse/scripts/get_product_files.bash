@@ -11,10 +11,11 @@ mkdir -p "${path_to_pivnet_cli}"
 PATH=${path_to_pivnet_cli}:${PATH}
 
 latest_pivnet_cli_tag=$(curl --silent "https://api.github.com/repos/${pivnet_cli_repo}/releases/latest" | jq -r .tag_name)
-if [[ -e ${path_to_pivnet_cli}/pivnet && $(pivnet --version) =~ ${latest_pivnet_cli_tag} ]]; then
-	echo "Already have the latest version of pivnet-cli, skipping download..."
+if [[ -e ${path_to_pivnet_cli}/pivnet && ${latest_pivnet_cli_tag} =~ $(pivnet --version) ]]; then
+	echo "Already have version ${version} of pivnet-cli, skipping download..."
 else
-	wget "https://github.com/${pivnet_cli_repo}/releases/download/${latest_pivnet_cli_tag}/pivnet-linux-amd64-${latest_pivnet_cli_tag#v}" -O "${path_to_pivnet_cli}/pivnet"
+	echo "Downloading version ${version} of pivnet-cli..."
+	wget -q "https://github.com/${pivnet_cli_repo}/releases/download/${latest_pivnet_cli_tag}/pivnet-linux-amd64-${latest_pivnet_cli_tag#v}" -O "${path_to_pivnet_cli}/pivnet"
 	chmod +x "${path_to_pivnet_cli}/pivnet"
 fi
 
@@ -38,7 +39,7 @@ for file in "${product_files[@]}"; do
 	if [[ -e ${GPDB_PKG_DIR}/${version}/${file} ]]; then
 		echo "Found file ${GPDB_PKG_DIR}/${version}/${file}, checking sha256sum..."
 		sum=$(sha256sum "${GPDB_PKG_DIR}/${version}/${file}" | cut -d' ' -f1)
-		if [[ ${sum} == ${sha256} ]]; then
+		if [[ ${sum} == ${sha256%sha256=} ]]; then
 			echo "Sum is equivalent, skipping download of ${file}..."
 			continue
 		fi
