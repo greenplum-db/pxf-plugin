@@ -6,7 +6,8 @@
 
 set -e
 
-: "${GPDB_PKG:?GPDB_PKG must be set}"
+: "${GPDB_PKG_DIR:?GPDB_PKG_DIR must be set}"
+: "${GPDB_PKG_TYPE:?GPDB_PKG_TYPE must be set}"
 : "${BIN_GPDB_DIR:?BIN_GPDB_DIR must be set}"
 
 BASE_DIR=${PWD}
@@ -14,6 +15,9 @@ EXTRACT_DIR=/tmp/extract/
 
 mkdir -p "${EXTRACT_DIR}"
 pushd "${EXTRACT_DIR}"
+
+tar zxf "${GPDB_PKG_DIR}/gpdb_pkg.tar.gz" -C "${GPDB_PKG_DIR}"
+GPDB_PKG=$(find "${GPDB_PKG_DIR}" -name "*${GPDB_PKG_TYPE}*")
 if [[ ${GPDB_PKG} =~ .*\.rpm$ ]]; then
 	# https://stackoverflow.com/a/18787544
 	rpm2cpio "${BASE_DIR}/${GPDB_PKG}" | cpio -idm

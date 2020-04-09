@@ -13,6 +13,13 @@ resource_types:
 
 resources:
 
+- name: pxf_src
+  type: git
+  source:
+    branch: {{pxf-git-branch}}
+    uri: {{pxf-git-remote}}
+    private_key: ((ccp-git-key))
+
 - name: pxf-protocol-extension_src
   type: git
   source:
@@ -32,6 +39,15 @@ resources:
     bucket: data-gpdb-ud-pivnet-artifacts
     json_key: ((data-gpdb-ud-google-json-key))
     versioned_file: gpdb_pkg.tar.gz
+
+- name: pxf_tarball
+  type: s3
+  source:
+    access_key_id: {{bucket-access-key-id}}
+    bucket: {{pxf-aws-bucket-name}}
+    region_name: {{aws-region}}
+    secret_access_key: {{bucket-secret-access-key}}
+    versioned_file: pxf_artifacts/((folder-prefix))_((gpdb-branch))/latest/pxf.tar.gz
 
 ## ======================================================================
 ## JOBS
@@ -58,9 +74,21 @@ jobs:
 - name: Test PXF Protocol Extension
   plan:
   - in_parallel:
+    - get: pxf_src
+    - get: pxf_tarball
     - get: pxf-protocol-extension_src
       trigger: true
+      passed:
+      - Get Greenplum Product Files
     - get: gpdb-pxf-dev-centos7-hdp2-server
     - get: gpdb_pkg
       trigger: true
-      passed: Get Greenplum Product Files
+      passed:
+      - Get Greenplum Product Files
+  - task: Test Against Greenplum Product Files RHEL7
+    image: gpdb-pxf-dev-centos7-hdp2-server
+    file: pxf-protocol-extension_src/concourse/tasks/test_extension.yml
+    params:
+      PGPORT: 5432
+      GPDB_PKG_TYPE: rhel7
+      GPDB_PKG_DIR: gpdb_pkg
