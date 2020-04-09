@@ -89,6 +89,7 @@ jobs:
     image: gpdb-pxf-dev-centos7-hdp2-server
     file: pxf-protocol-extension_src/concourse/tasks/test_extension.yml
     params:
-      PGPORT: 5432
-      GPDB_PKG_TYPE: rhel7
       GPDB_PKG_DIR: gpdb_pkg
+      GPDB_PKG_TYPE: rhel7
+      GROUP: HdfsSmokeTest,WritableSmokeTest
+      PGPORT: 5432

@@ -10,17 +10,20 @@ inputs:
 - name: gpdb_pkg
 
 params:
-  PGPORT:
+  BIN_GPDB_DIR: /tmp
   GPDB_PKG_DIR:
   GPDB_PKG_TYPE:
+  GROUP:
+  PGPORT:
   PXF_PROTOCOL_EXTENSION_SRC: pxf-protocol-extension_src
-  BIN_GPDB_DIR: /tmp
 
 run:
   path: sh
   args:
   - -exc
   - |
-    pxf-protocol-extension_src/concourse/scripts/extract_pxf.bash &&
-    pxf-protocol-extension_src/concourse/scripts/install_pxf_protocol_extension.bash &&
-    pxf-protocol-extension_src/concourse/scripts/test_pxf.bash
+    export PATH=pxf-protocol-extension_src/concourse/scripts:$PATH &&
+    extract_pxf.bash &&
+    install_pxf_protocol_extension.bash &&
+    su gpadmin initialize_gpdb.bash &&
+    test_pxf.bash
