@@ -25,5 +25,5 @@ run:
     export PATH=pxf-protocol-extension_src/concourse/scripts:$PATH &&
     extract_pxf.bash &&
     install_pxf_protocol_extension.bash &&
-    su gpadmin initialize_gpdb.bash &&
+    su gpadmin pxf-protocol-extension_src/concourse/scripts/initialize_gpdb.bash &&
     test_pxf.bash
