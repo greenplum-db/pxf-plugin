@@ -27,11 +27,23 @@ resources:
     uri: {{pxf-protocol-extension-git-remote}}
     private_key: ((ccp-git-key))
 
+- name: gpdb-pxf-dev-centos6-hdp2-server
+  type: docker-image
+  source:
+    repository: pivotaldata/gpdb-pxf-dev
+    tag: centos6-hdp2-server
+
 - name: gpdb-pxf-dev-centos7-hdp2-server
   type: docker-image
   source:
     repository: pivotaldata/gpdb-pxf-dev
     tag: centos7-hdp2-server
+
+- name: gpdb-pxf-dev-ubuntu18-hdp2-server
+  type: docker-image
+  source:
+    repository: pivotaldata/gpdb-pxf-dev
+    tag: ubuntu18-hdp2-server
 
 - name: gpdb_pkg
   type: gcs
@@ -80,16 +92,34 @@ jobs:
       trigger: true
       passed:
       - Get Greenplum Product Files
+    - get: gpdb-pxf-dev-centos6-hdp2-server
     - get: gpdb-pxf-dev-centos7-hdp2-server
+    - get: gpdb-pxf-dev-ubuntu18-hdp2-server
     - get: gpdb_pkg
       trigger: true
       passed:
       - Get Greenplum Product Files
+  - task: Test Against Greenplum Product Files RHEL6
+    image: gpdb-pxf-dev-centos6-hdp2-server
+    file: pxf-protocol-extension_src/concourse/tasks/test_extension.yml
+    params:
+      GPDB_PKG_DIR: gpdb_pkg
+      GPDB_PKG_TYPE: rhel6
+      GROUP: HdfsSmokeTest,WritableSmokeTest
+      PGPORT: 5432
   - task: Test Against Greenplum Product Files RHEL7
     image: gpdb-pxf-dev-centos7-hdp2-server
     file: pxf-protocol-extension_src/concourse/tasks/test_extension.yml
     params:
       GPDB_PKG_DIR: gpdb_pkg
       GPDB_PKG_TYPE: rhel7
+      GROUP: HdfsSmokeTest,WritableSmokeTest
+      PGPORT: 5432
+  - task: Test Against Greenplum Product Files Ubuntu18
+    image: gpdb-pxf-dev-ubuntu18-hdp2-server
+    file: pxf-protocol-extension_src/concourse/tasks/test_extension.yml
+    params:
+      GPDB_PKG_DIR: gpdb_pkg
+      GPDB_PKG_TYPE: ubuntu18
       GROUP: HdfsSmokeTest,WritableSmokeTest
       PGPORT: 5432
