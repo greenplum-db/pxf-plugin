@@ -13,7 +13,7 @@ set -e
 tar zxf "${BIN_GPDB_DIR}/bin_gpdb.tar.gz" -C /
 
 GPHOME=/usr/local/greenplum-db-devel
-gphome_orig=$(< "${BIN_GPDB_DIR}/GPHOME")
+gphome_orig=$(<"${BIN_GPDB_DIR}/GPHOME")
 [[ -d ${GPHOME} ]] && sudo rm -rf "${GPHOME}"
 sudo cp -r "${gphome_orig%/}" "${GPHOME}"
 sed -ie "s|^GPHOME=.*$|GPHOME=${GPHOME}|" "${GPHOME}/greenplum_path.sh"

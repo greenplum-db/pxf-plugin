@@ -62,8 +62,35 @@ resources:
     versioned_file: pxf_artifacts/((folder-prefix))_((gpdb-branch))/latest/pxf.tar.gz
 
 ## ======================================================================
+## ANCHORS
+## ======================================================================
+
+anchors:
+- &task_anchor
+  config:
+    platform: linux
+    inputs:
+    - name: pxf-protocol-extension_src
+    - name: pxf_src
+    - name: pxf_tarball
+    - name: gpdb_pkg
+    run:
+      path: sh
+      args:
+      - -exc
+      - |
+          limits='gpadmin soft core unlimited\ngpadmin soft nproc 131072\ngpadmin soft nofile 65536'
+          echo -e "${limits}" >> /etc/security/limits.d/gpadmin-limits.conf
+          export PATH=${PWD}/pxf-protocol-extension_src/concourse/scripts:$PATH &&
+          extract_pxf.bash &&
+          install_pxf_protocol_extension.bash &&
+          su gpadmin "${PWD}/pxf-protocol-extension_src/concourse/scripts/initialize_gpdb.bash" &&
+          test_pxf.bash
+
+## ======================================================================
 ## JOBS
 ## ======================================================================
+
 jobs:
 - name: Get Greenplum Product Files
   plan:
@@ -101,25 +128,31 @@ jobs:
   - in_parallel:
     - task: Test Against Greenplum Product Files RHEL6
       image: gpdb-pxf-dev-centos6-hdp2-server
-      file: pxf-protocol-extension_src/concourse/tasks/test_extension.yml
+      <<: *task_anchor
       params:
+        BIN_GPDB_DIR: /tmp
         GPDB_PKG_DIR: gpdb_pkg
-        GPDB_PKG_TYPE: rhel6
         GROUP: HdfsSmokeTest,WritableSmokeTest
         PGPORT: 5432
+        PXF_PROTOCOL_EXTENSION_SRC: pxf-protocol-extension_src
+        GPDB_PKG_TYPE: rhel6
     - task: Test Against Greenplum Product Files RHEL7
       image: gpdb-pxf-dev-centos7-hdp2-server
-      file: pxf-protocol-extension_src/concourse/tasks/test_extension.yml
+      <<: *task_anchor
       params:
+        BIN_GPDB_DIR: /tmp
         GPDB_PKG_DIR: gpdb_pkg
-        GPDB_PKG_TYPE: rhel7
         GROUP: HdfsSmokeTest,WritableSmokeTest
         PGPORT: 5432
+        PXF_PROTOCOL_EXTENSION_SRC: pxf-protocol-extension_src
+        GPDB_PKG_TYPE: rhel7
     - task: Test Against Greenplum Product Files Ubuntu18
       image: gpdb-pxf-dev-ubuntu18-hdp2-server
-      file: pxf-protocol-extension_src/concourse/tasks/test_extension.yml
+      <<: *task_anchor
       params:
+        BIN_GPDB_DIR: /tmp
         GPDB_PKG_DIR: gpdb_pkg
-        GPDB_PKG_TYPE: ubuntu18
         GROUP: HdfsSmokeTest,WritableSmokeTest
         PGPORT: 5432
+        PXF_PROTOCOL_EXTENSION_SRC: pxf-protocol-extension_src
+        GPDB_PKG_TYPE: ubuntu18

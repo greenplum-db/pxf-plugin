@@ -45,14 +45,14 @@ for file in "${product_files[@]}"; do
 	download_path=${GPDB_PKG_DIR}/${version}/${file##*/}
 	if [[ -e ${download_path} ]]; then
 		echo "Found file ${download_path}, checking sha256sum..."
-		sha256=$(jq <<< "${product_files_json}" -r --arg object_key "${file}" '.[] | select(.aws_object_key == $object_key).sha256')
+		sha256=$(jq <<<"${product_files_json}" -r --arg object_key "${file}" '.[] | select(.aws_object_key == $object_key).sha256')
 		sum=$(sha256sum "${download_path}" | cut -d' ' -f1)
-		if [[ ${sum} == ${sha256} ]]; then
+		if [[ ${sum} == "${sha256}" ]]; then
 			echo "Sum is equivalent, skipping download of ${file}..."
 			continue
 		fi
 	fi
-	id=$(jq <<< "${product_files_json}" -r --arg object_key "${file}" '.[] | select(.aws_object_key == $object_key).id')
+	id=$(jq <<<"${product_files_json}" -r --arg object_key "${file}" '.[] | select(.aws_object_key == $object_key).id')
 	echo "Downloading ${file} with id ${id}..."
 	mkdir -p "${GPDB_PKG_DIR}/${version}"
 	pivnet download-product-files \
@@ -60,7 +60,7 @@ for file in "${product_files[@]}"; do
 		"--product-slug=${PRODUCT_SLUG}" \
 		"--release-version=${version}" \
 		"--product-file-id=${id}" >/dev/null 2>&1 &
-	pids+=( $! )
+	pids+=($!)
 	artifact_is_new=true
 done
 

@@ -50,4 +50,4 @@ for file in "${list_of_pxf_files[@]}"; do
 done
 
 tar zcf "${BIN_GPDB_DIR}/bin_gpdb.tar.gz" -C "${EXTRACT_DIR}" "${gpdb_home#"${EXTRACT_DIR}"}"
-echo "/${gpdb_home#"${EXTRACT_DIR}"}" > "${BIN_GPDB_DIR}/GPHOME"
+echo "/${gpdb_home#"${EXTRACT_DIR}"}" >"${BIN_GPDB_DIR}/GPHOME"

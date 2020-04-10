@@ -12,19 +12,16 @@ JAVA_HOME=$(find /usr/lib/jvm -name 'java-1.8.0-openjdk*' | head -1)
 
 function run_pg_regress() {
 	# run desired groups (below we replace commas with spaces in $GROUPS)
-	cat > ~gpadmin/run_pxf_automation_test.sh <<-EOF
+	cat >~gpadmin/run_pxf_automation_test.sh <<-EOF
 		#!/usr/bin/env bash
 		set -euxo pipefail
-
 		source ${GPHOME}/greenplum_path.sh
-
 		export GPHD_ROOT=${GPHD_ROOT}
 		export PXF_HOME=${PXF_HOME} PXF_CONF=${PXF_CONF_DIR}
 		export PGPORT=${PGPORT}
 		export HCFS_CMD=${GPHD_ROOT}/bin/hdfs
 		export HCFS_PROTOCOL=${PROTOCOL}
 		export JAVA_HOME=${JAVA_HOME}
-
 		time make -C ${PWD}/pxf_src/regression ${GROUP//,/ }
 	EOF
 
@@ -48,7 +45,7 @@ function start_pxf_server() {
 	echo 'Starting PXF service'
 	su gpadmin -c "${PXF_HOME}/bin/pxf start"
 	# grep with regex to avoid catching grep process itself
-	ps -aef | grep '[t]omcat'
+	pgrep -f tomcat
 }
 
 function init_and_configure_pxf_server() {
@@ -66,7 +63,7 @@ function init_hdfs() {
 
 	# set up impersonation
 	echo "Impersonation is enabled, adding support for proxy user ${PROXY_USER}"
-	cat > proxy-config.xml <<-EOF
+	cat >proxy-config.xml <<-EOF
 		<property>
 		  <name>hadoop.proxyuser.${PROXY_USER}.hosts</name>
 		  <value>*</value>
@@ -100,7 +97,7 @@ function init_hdfs() {
 		  <value>org.apache.hadoop.hbase.security.access.AccessController</value>
 		</property>
 	EOF
-	sed -i -e '/<configuration>/r proxy-config.xml' "${GPHD_ROOT}/hadoop/etc/hadoop/core-site.xml"
+	sed -ie '/<configuration>/r proxy-config.xml' "${GPHD_ROOT}/hadoop/etc/hadoop/core-site.xml"
 	rm proxy-config.xml
 	"${GPHD_ROOT}/bin/init-gphd.sh"
 	"${GPHD_ROOT}/bin/start-hdfs.sh"
