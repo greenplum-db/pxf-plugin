@@ -1,12 +1,35 @@
 # set the concourse target default to dev
 CONCOURSE ?= ud
 
-# set the gp-release default branch to current branch
+# set the pxf-protocol-extension default branch to current branch
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 
-PIPELINE_NAME              = pxf-protocol-extension-${BRANCH}-${USER}
+PIPELINE_NAME              = pxf-protocol-extension-6X_STABLE
 FLY_CMD                    = fly
 FLY_OPTION_NON-INTERACTIVE =
+
+.PHONY: set
+set: set-pipeline
+
+.PHONY: set-pipeline
+set-pipeline:
+	$(FLY_CMD) --target=$(CONCOURSE) \
+		set-pipeline \
+		--check-creds \
+		--pipeline=$(PIPELINE_NAME) \
+		--config=pipelines/pxf-protocol-extension_pipeline.yml \
+		--load-vars-from=$(HOME)/workspace/gp-continuous-integration/secrets/gpdb-6X_STABLE-release-secrets.prod.yml \
+		--load-vars-from=$(HOME)/workspace/gp-continuous-integration/secrets/gpdb_common-ci-secrets.yml \
+		--var=pxf-protocol-extension-git-branch=6X_STABLE_pipeline \
+		--var=pxf-protocol-extension-git-remote=https://github.com/greenplum-db/pxf-protocol-extension \
+		--var=pxf-git-branch=fix_pgregress_external_table \
+		--var=pxf-git-remote=https://github.com/greenplum-db/pxf \
+		--var=folder-prefix=prod/gpdb_branch \
+		--var=gpdb-branch=6X_STABLE \
+		${FLY_OPTION_NON-INTERACTIVE}
+
+	@echo using the following command to unpause the pipeline:
+	@echo "\t$(FLY_CMD) -t ${CONCOURSE} unpause-pipeline --pipeline ${PIPELINE_NAME}"
 
 ## ----------------------------------------------------------------------
 ## List explicit rules
