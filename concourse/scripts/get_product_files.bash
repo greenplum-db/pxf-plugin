@@ -1,29 +1,28 @@
 #!/usr/bin/env bash
 
 set -e
+
 : "${PIVNET_API_TOKEN:?PIVNET_API_TOKEN is required}"
-: "${GPDB_PKG_DIR:?GPDB_PKG_DIR is required}"
+: "${PIVNET_CLI_DIR:?PIVNET_CLI_DIR is required}"
+: "${RHEL6_RPM_DIR:?RHEL6_RPM_DIR is required}"
+: "${RHEL7_RPM_DIR:?RHEL7_RPM_DIR is required}"
+: "${UBUNTU18_DEB_DIR:?UBUNTU18_DEB_DIR is required}"
 : "${PRODUCT_SLUG:?PRODUCT_SLUG is required}"
 
-if [[ -e "${GPDB_PKG_DIR}/gpdb_pkg.tar.gz" ]]; then
-	echo "Found ${GPDB_PKG_DIR}/gpdb_pkg.tar.gz..."
-	tar zxf "${GPDB_PKG_DIR}/gpdb_pkg.tar.gz" -C "${GPDB_PKG_DIR}"
-fi
-
-artifact_is_new=false
 pivnet_cli_repo=pivotal-cf/pivnet-cli
-path_to_pivnet_cli=${GPDB_PKG_DIR}/${pivnet_cli_repo}
-mkdir -p "${path_to_pivnet_cli}"
-PATH=${path_to_pivnet_cli}:${PATH}
+PATH=${PIVNET_CLI_DIR}:${PATH}
+
+chmod_pivnet() {
+	chmod +x "${PIVNET_CLI_DIR}/pivnet"
+}
 
 latest_pivnet_cli_tag=$(curl --silent "https://api.github.com/repos/${pivnet_cli_repo}/releases/latest" | jq -r .tag_name)
-if [[ -e ${path_to_pivnet_cli}/pivnet && ${latest_pivnet_cli_tag} =~ $(pivnet --version) ]]; then
+if chmod_pivnet && [[ ${latest_pivnet_cli_tag#v} == $(pivnet --version) ]]; then
 	echo "Already have version ${latest_pivnet_cli_tag} of pivnet-cli, skipping download..."
 else
 	echo "Downloading version ${latest_pivnet_cli_tag} of pivnet-cli..."
-	wget -q "https://github.com/${pivnet_cli_repo}/releases/download/${latest_pivnet_cli_tag}/pivnet-linux-amd64-${latest_pivnet_cli_tag#v}" -O "${path_to_pivnet_cli}/pivnet"
-	chmod +x "${path_to_pivnet_cli}/pivnet"
-	artifact_is_new=true
+	wget -q "https://github.com/${pivnet_cli_repo}/releases/download/${latest_pivnet_cli_tag}/pivnet-linux-amd64-${latest_pivnet_cli_tag#v}" -O "${PIVNET_CLI_DIR}/pivnet"
+	chmod_pivnet
 fi
 
 # log in to pivnet
@@ -39,10 +38,12 @@ product_files=(
 	"product_files/Pivotal-Greenplum/greenplum-db-${version}-rhel7-x86_64.rpm"
 	"product_files/Pivotal-Greenplum/greenplum-db-${version}-ubuntu18.04-amd64.deb"
 )
+product_dirs=("${RHEL6_RPM_DIR}" "${RHEL7_RPM_DIR}" "${UBUNTU18_DEB_DIR}")
 
 product_files_json=$(pivnet --format=json product-files "--product-slug=${PRODUCT_SLUG}" --release-version "${version}")
-for file in "${product_files[@]}"; do
-	download_path=${GPDB_PKG_DIR}/${version}/${file##*/}
+for ((i = 0; i < ${#product_files[@]}; i++)); do
+	file=${product_files[$i]}
+	download_path=${product_dirs[$i]}/${file##*/}
 	if [[ -e ${download_path} ]]; then
 		echo "Found file ${download_path}, checking sha256sum..."
 		sha256=$(jq <<<"${product_files_json}" -r --arg object_key "${file}" '.[] | select(.aws_object_key == $object_key).sha256')
@@ -53,20 +54,13 @@ for file in "${product_files[@]}"; do
 		fi
 	fi
 	id=$(jq <<<"${product_files_json}" -r --arg object_key "${file}" '.[] | select(.aws_object_key == $object_key).id')
-	echo "Downloading ${file} with id ${id}..."
-	mkdir -p "${GPDB_PKG_DIR}/${version}"
+	echo "Downloading ${file} with id ${id} to ${product_dirs[$i]}..."
 	pivnet download-product-files \
-		"--download-dir=${GPDB_PKG_DIR}/${version}" \
+		"--download-dir=${product_dirs[$i]}" \
 		"--product-slug=${PRODUCT_SLUG}" \
 		"--release-version=${version}" \
 		"--product-file-id=${id}" >/dev/null 2>&1 &
 	pids+=($!)
-	artifact_is_new=true
 done
 
 wait "${pids[@]}"
-
-if [[ ${artifact_is_new} == true ]]; then
-	echo "Detected changes in artifacts, creating new tar ball..."
-	tar zcf "${GPDB_PKG_DIR}/gpdb_pkg.tar.gz" -C "${GPDB_PKG_DIR}" "${version}" "pivotal-cf"
-fi

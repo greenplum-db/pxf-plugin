@@ -6,10 +6,16 @@ image_resource:
 
 inputs:
 - name: pxf-protocol-extension_src
-- name: gpdb_pkg
+- name: pivnet_cli
+- name: rhel6_rpm
+- name: rhel7_rpm
+- name: ubuntu18_deb
 
 outputs:
-- name: gpdb_pkg
+- name: pivnet_cli
+- name: rhel6_rpm
+- name: rhel7_rpm
+- name: ubuntu18_deb
 
 params:
   PIVNET_API_TOKEN:

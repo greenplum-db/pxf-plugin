@@ -1,32 +1,31 @@
 #!/usr/bin/env bash
 
 # this script removes the C client extension from GPDB binary
-# run as gpadmin
+# run as gpadmin or root
 # can run in centos6 or centos7 environments
 
 set -e
 
 : "${GPDB_PKG_DIR:?GPDB_PKG_DIR must be set}"
-: "${GPDB_PKG_TYPE:?GPDB_PKG_TYPE must be set}"
 : "${BIN_GPDB_DIR:?BIN_GPDB_DIR must be set}"
+
+RPMS=("${GPDB_PKG_DIR}"/greenplum-db-*.rpm)
+DEBS=("${GPDB_PKG_DIR}"/greenplum-db-*.deb)
 
 BASE_DIR=${PWD}
 EXTRACT_DIR=/tmp/extract/
 
-tar zxf "${GPDB_PKG_DIR}/gpdb_pkg.tar.gz" -C "${GPDB_PKG_DIR}"
-GPDB_PKG=$(find "${GPDB_PKG_DIR}" -name "*${GPDB_PKG_TYPE}*")
-
 mkdir -p "${EXTRACT_DIR}"
 pushd "${EXTRACT_DIR}"
 
-if [[ ${GPDB_PKG} =~ .*\.rpm$ ]]; then
+if ((${#RPMS[@]} == 1)) && [[ -e ${BASE_DIR}/${RPMS[0]} ]]; then
 	# https://stackoverflow.com/a/18787544
-	rpm2cpio "${BASE_DIR}/${GPDB_PKG}" | cpio -idm
-elif [[ ${GPDB_PKG} =~ .*\.deb$ ]]; then
-	ar x "${BASE_DIR}/${GPDB_PKG}"
+	rpm2cpio "${BASE_DIR}/${RPMS[0]}" | cpio -idm
+elif ((${#DEBS[@]} == 1)) && [[ -e ${BASE_DIR}/${DEBS[0]} ]]; then
+	ar x "${BASE_DIR}/${DEBS[0]}"
 	tar xf data.tar.xz
 else
-	echo "${BASE_DIR}/${GPDB_PKG} is not an RPM or DEB file"
+	echo "${BASE_DIR}/${GPDB_PKG_DIR} must contain a single RPM or DEB file"
 	exit 1
 fi
 popd
