@@ -5,7 +5,7 @@ CONCOURSE ?= ud
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 
 PIPELINE_NAME              = pxf-protocol-extension-6X_STABLE
-FLY_CMD                    = fly
+FLY_CMD                    = /usr/local/bin/fly
 FLY_OPTION_NON-INTERACTIVE =
 
 .PHONY: set

@@ -9,25 +9,15 @@ set -e
 : "${GPDB_PKG_DIR:?GPDB_PKG_DIR must be set}"
 : "${BIN_GPDB_DIR:?BIN_GPDB_DIR must be set}"
 
-RPMS=("${GPDB_PKG_DIR}"/greenplum-db-*.rpm)
-DEBS=("${GPDB_PKG_DIR}"/greenplum-db-*.deb)
-
 BASE_DIR=${PWD}
 EXTRACT_DIR=/tmp/extract/
 
 mkdir -p "${EXTRACT_DIR}"
 pushd "${EXTRACT_DIR}"
 
-if ((${#RPMS[@]} == 1)) && [[ -e ${BASE_DIR}/${RPMS[0]} ]]; then
-	# https://stackoverflow.com/a/18787544
-	rpm2cpio "${BASE_DIR}/${RPMS[0]}" | cpio -idm
-elif ((${#DEBS[@]} == 1)) && [[ -e ${BASE_DIR}/${DEBS[0]} ]]; then
-	ar x "${BASE_DIR}/${DEBS[0]}"
-	tar xf data.tar.xz
-else
-	echo "${BASE_DIR}/${GPDB_PKG_DIR} must contain a single RPM or DEB file"
-	exit 1
-fi
+find "${GPDB_PKG_DIR}" -name 'greenplum*rpm' -exec rpm2cpio "{}" \; | cpio -idm
+find "${GPDB_PKG_DIR}" -name 'greenplum*deb' -exec ar x "{}" \; tar xf data.tar.xz \;
+
 popd
 
 gpdb_home=$(find "${EXTRACT_DIR}" -type d -name 'greenplum-db-*')

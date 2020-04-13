@@ -44,15 +44,6 @@ resources:
     repository: pivotaldata/gpdb-pxf-dev
     tag: ubuntu18-hdp2-server
 
-- name: pivnet_cli
-  type: gcs
-  icon: google-drive
-  source:
-    bucket: data-gpdb-ud-pivnet-artifacts
-    json_key: ((data-gpdb-ud-google-json-key))
-    versioned_file: pivotal-cf/pivnet-cli/pivnet
-    initial_version: 0
-
 - name: rhel6_rpm
   type: gcs
   icon: google-drive
@@ -60,7 +51,6 @@ resources:
     bucket: data-gpdb-ud-pivnet-artifacts
     json_key: ((data-gpdb-ud-google-json-key))
     regexp: latest/greenplum-db-(.*)-rhel6-x86_64.rpm
-    initial_path: latest/greenplum-db-0.0.0-rhel6-x86_64.rpm
 
 - name: rhel7_rpm
   type: gcs
@@ -69,7 +59,6 @@ resources:
     bucket: data-gpdb-ud-pivnet-artifacts
     json_key: ((data-gpdb-ud-google-json-key))
     regexp: latest/greenplum-db-(.*)-rhel7-x86_64.rpm
-    initial_path: latest/greenplum-db-0.0.0-rhel7-x86_64.rpm
 
 - name: ubuntu18_deb
   type: gcs
@@ -78,7 +67,6 @@ resources:
     bucket: data-gpdb-ud-pivnet-artifacts
     json_key: ((data-gpdb-ud-google-json-key))
     regexp: latest/greenplum-db-(.*)-ubuntu18.04-amd64.deb
-    initial_path: latest/greenplum-db-0.0.0-ubuntu18.04-amd64.deb
 
 - name: pxf_tarball
   type: s3
@@ -115,40 +103,6 @@ anchors:
 ## ======================================================================
 
 jobs:
-- name: Get Greenplum Product Files
-  plan:
-  - in_parallel:
-    - get: pxf-protocol-extension_src
-      trigger: true
-    - get: gpdb-pxf-dev-centos7-hdp2-server
-    - get: pivnet_cli
-    - get: rhel6_rpm
-    - get: rhel7_rpm
-    - get: ubuntu18_deb
-  - task: Get Greenplum Product Files
-    # this task will fail on centos6
-    image: gpdb-pxf-dev-centos7-hdp2-server
-    file: pxf-protocol-extension_src/concourse/tasks/get_product_files.yml
-    params:
-      PIVNET_API_TOKEN: {{public_pivnet_refresh_token}}
-      PIVNET_CLI_DIR: pivnet_cli
-      RHEL6_RPM_DIR: rhel6_rpm
-      RHEL7_RPM_DIR: rhel7_rpm
-      UBUNTU18_DEB_DIR: ubuntu18_deb
-  - in_parallel:
-    - put: pivnet_cli
-      params:
-        file: pivnet_cli/pivnet
-    - put: rhel6_rpm
-      params:
-        file: rhel6_rpm/greenplum-db-*-rhel6-x86_64.rpm
-    - put: rhel7_rpm
-      params:
-        file: rhel7_rpm/greenplum-db-*-rhel7-x86_64.rpm
-    - put: ubuntu18_deb
-      params:
-        file: ubuntu18_deb/greenplum-db-*-ubuntu18.04-amd64.deb
-
 - name: Test PXF Protocol Extension On RHEL6
   plan:
   - in_parallel:
@@ -156,12 +110,8 @@ jobs:
     - get: pxf_tarball
     - get: pxf-protocol-extension_src
       trigger: true
-      passed:
-      - Get Greenplum Product Files
     - get: gpdb-pxf-dev-centos6-hdp2-server
     - get: rhel6_rpm
-      passed:
-      - Get Greenplum Product Files
   - task: Test Against Greenplum Product Files RHEL6
     image: gpdb-pxf-dev-centos6-hdp2-server
     config:
@@ -185,12 +135,8 @@ jobs:
     - get: pxf_tarball
     - get: pxf-protocol-extension_src
       trigger: true
-      passed:
-      - Get Greenplum Product Files
     - get: gpdb-pxf-dev-centos7-hdp2-server
     - get: rhel7_rpm
-      passed:
-      - Get Greenplum Product Files
   - task: Test Against Greenplum Product Files RHEL7
     image: gpdb-pxf-dev-centos7-hdp2-server
     config:
@@ -214,12 +160,8 @@ jobs:
     - get: pxf_tarball
     - get: pxf-protocol-extension_src
       trigger: true
-      passed:
-      - Get Greenplum Product Files
     - get: gpdb-pxf-dev-ubuntu18-hdp2-server
     - get: ubuntu18_deb
-      passed:
-      - Get Greenplum Product Files
   - task: Test Against Greenplum Product Files Ubuntu18
     image: gpdb-pxf-dev-ubuntu18-hdp2-server
     config:
