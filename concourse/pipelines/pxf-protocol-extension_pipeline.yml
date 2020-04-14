@@ -92,6 +92,7 @@ anchors:
         limits='gpadmin soft core unlimited\ngpadmin soft nproc 131072\ngpadmin soft nofile 65536'
         echo -e "${limits}" >> /etc/security/limits.d/gpadmin-limits.conf
         export GROUP=HdfsSmokeTest,WritableSmokeTest PATH=${PWD}/pxf-protocol-extension_src/concourse/scripts:$PATH &&
+        export PXF_PROTOCOL_EXTENSION_SRC="${PWD}/pxf-protocol-extension_src" &&
         install_gpdb.bash &&
         su gpadmin "$(command -v initialize_gpdb.bash)" &&
         test_pxf.bash
@@ -122,7 +123,6 @@ jobs:
       - name: rhel6_rpm
       params:
         GPDB_PKG_DIR: rhel6_rpm
-        PXF_PROTOCOL_EXTENSION_SRC: pxf-protocol-extension_src
 
 - name: Test PXF Protocol Extension On RHEL7
   plan:
@@ -145,7 +145,6 @@ jobs:
       - name: rhel7_rpm
       params:
         GPDB_PKG_DIR: rhel7_rpm
-        PXF_PROTOCOL_EXTENSION_SRC: pxf-protocol-extension_src
 
 - name: Test PXF Protocol Extension On Ubuntu18
   plan:
@@ -168,4 +167,3 @@ jobs:
       - name: ubuntu18_deb
       params:
         GPDB_PKG_DIR: ubuntu18_deb
-        PXF_PROTOCOL_EXTENSION_SRC: pxf-protocol-extension_src

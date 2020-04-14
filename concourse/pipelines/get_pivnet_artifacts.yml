@@ -31,32 +31,59 @@ resources:
     versioned_file: pivotal-cf/pivnet-cli/pivnet
     initial_version: 0
 
-- name: rhel6_rpm
+- name: gpdb5_rhel6_rpm
   type: gcs
   icon: google-drive
   source:
     bucket: data-gpdb-ud-pivnet-artifacts
     json_key: ((data-gpdb-ud-google-json-key))
-    regexp: latest/greenplum-db-(.*)-rhel6-x86_64.rpm
-    initial_path: latest/greenplum-db-0.0.0-rhel6-x86_64.rpm
+    regexp: latest_gpdb5/greenplum-db-(.*)-rhel6-x86_64.rpm
+    initial_path: latest_gpdb5/greenplum-db-0.0.0-rhel6-x86_64.rpm
 
-- name: rhel7_rpm
+- name: gpdb5_rhel7_rpm
   type: gcs
   icon: google-drive
   source:
     bucket: data-gpdb-ud-pivnet-artifacts
     json_key: ((data-gpdb-ud-google-json-key))
-    regexp: latest/greenplum-db-(.*)-rhel7-x86_64.rpm
-    initial_path: latest/greenplum-db-0.0.0-rhel7-x86_64.rpm
+    regexp: latest_gpdb5/greenplum-db-(.*)-rhel7-x86_64.rpm
+    initial_path: latest_gpdb5/greenplum-db-0.0.0-rhel7-x86_64.rpm
 
-- name: ubuntu18_deb
+- name: gpdb5_ubuntu18_deb
   type: gcs
   icon: google-drive
   source:
     bucket: data-gpdb-ud-pivnet-artifacts
     json_key: ((data-gpdb-ud-google-json-key))
-    regexp: latest/greenplum-db-(.*)-ubuntu18.04-amd64.deb
-    initial_path: latest/greenplum-db-0.0.0-ubuntu18.04-amd64.deb
+    regexp: latest_gpdb5/greenplum-db-(.*)-ubuntu18.04-amd64.deb
+    initial_path: latest_gpdb5/greenplum-db-0.0.0-ubuntu18.04-amd64.deb
+
+- name: gpdb6_rhel6_rpm
+  type: gcs
+  icon: google-drive
+  source:
+    bucket: data-gpdb-ud-pivnet-artifacts
+    json_key: ((data-gpdb-ud-google-json-key))
+    regexp: latest_gpdb6/greenplum-db-(.*)-rhel6-x86_64.rpm
+    initial_path: latest_gpdb6/greenplum-db-0.0.0-rhel6-x86_64.rpm
+
+- name: gpdb6_rhel7_rpm
+  type: gcs
+  icon: google-drive
+  source:
+    bucket: data-gpdb-ud-pivnet-artifacts
+    json_key: ((data-gpdb-ud-google-json-key))
+    regexp: latest_gpdb6/greenplum-db-(.*)-rhel7-x86_64.rpm
+    initial_path: latest_gpdb6/greenplum-db-0.0.0-rhel7-x86_64.rpm
+
+- name: gpdb6_ubuntu18_deb
+  type: gcs
+  icon: google-drive
+  source:
+    bucket: data-gpdb-ud-pivnet-artifacts
+    json_key: ((data-gpdb-ud-google-json-key))
+    regexp: latest_gpdb6/greenplum-db-(.*)-ubuntu18.04-amd64.deb
+    initial_path: latest_gpdb6/greenplum-db-0.0.0-ubuntu18.04-amd64.deb
 
 jobs:
 - name: Get Greenplum Product Files
@@ -66,9 +93,12 @@ jobs:
       trigger: true
     - get: ubuntu18
     - get: pivnet_cli
-    - get: rhel6_rpm
-    - get: rhel7_rpm
-    - get: ubuntu18_deb
+    - get: gpdb5_rhel6_rpm
+    - get: gpdb5_rhel7_rpm
+    - get: gpdb5_ubuntu18_deb
+    - get: gpdb6_rhel6_rpm
+    - get: gpdb6_rhel7_rpm
+    - get: gpdb6_ubuntu18_deb
   - task: Get Greenplum Product Files
     # this task will fail on centos6
     image: ubuntu18
@@ -76,19 +106,31 @@ jobs:
     params:
       PIVNET_API_TOKEN: {{public_pivnet_refresh_token}}
       PIVNET_CLI_DIR: pivnet_cli
-      RHEL6_RPM_DIR: rhel6_rpm
-      RHEL7_RPM_DIR: rhel7_rpm
-      UBUNTU18_DEB_DIR: ubuntu18_deb
+      GPDB5_RHEL6_RPM_DIR: gpdb5_rhel6_rpm
+      GPDB5_RHEL7_RPM_DIR: gpdb5_rhel7_rpm
+      GPDB5_UBUNTU18_DEB_DIR: gpdb5_ubuntu18_deb
+      GPDB6_RHEL6_RPM_DIR: gpdb5_rhel6_rpm
+      GPDB6_RHEL7_RPM_DIR: gpdb5_rhel7_rpm
+      GPDB6_UBUNTU18_DEB_DIR: gpdb5_ubuntu18_deb
   - in_parallel:
     - put: pivnet_cli
       params:
         file: pivnet_cli/pivnet
-    - put: rhel6_rpm
+    - put: gpdb5_rhel6_rpm
       params:
-        file: rhel6_rpm/greenplum-db-*-rhel6-x86_64.rpm
-    - put: rhel7_rpm
+        file: gpdb5_rhel6_rpm/greenplum-db-*-rhel6-x86_64.rpm
+    - put: gpdb5_rhel7_rpm
       params:
-        file: rhel7_rpm/greenplum-db-*-rhel7-x86_64.rpm
-    - put: ubuntu18_deb
+        file: gpdb5_rhel7_rpm/greenplum-db-*-rhel7-x86_64.rpm
+    - put: gpdb5_ubuntu18_deb
       params:
-        file: ubuntu18_deb/greenplum-db-*-ubuntu18.04-amd64.deb
+        file: gpdb5_ubuntu18_deb/greenplum-db-*-ubuntu18.04-amd64.deb
+    - put: gpdb6_rhel6_rpm
+      params:
+        file: gpdb6_rhel6_rpm/greenplum-db-*-rhel6-x86_64.rpm
+    - put: gpdb6_rhel7_rpm
+      params:
+        file: gpdb6_rhel7_rpm/greenplum-db-*-rhel7-x86_64.rpm
+    - put: gpdb6_ubuntu18_deb
+      params:
+        file: gpdb6_ubuntu18_deb/greenplum-db-*-ubuntu18.04-amd64.deb

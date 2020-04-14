@@ -4,9 +4,12 @@ set -e
 
 : "${PIVNET_API_TOKEN:?PIVNET_API_TOKEN is required}"
 : "${PIVNET_CLI_DIR:?PIVNET_CLI_DIR is required}"
-: "${RHEL6_RPM_DIR:?RHEL6_RPM_DIR is required}"
-: "${RHEL7_RPM_DIR:?RHEL7_RPM_DIR is required}"
-: "${UBUNTU18_DEB_DIR:?UBUNTU18_DEB_DIR is required}"
+: "${GPDB5_RHEL6_RPM_DIR:?GPDB5_RHEL6_RPM_DIR is required}"
+: "${GPDB5_RHEL7_RPM_DIR:?GPDB5_RHEL7_RPM_DIR is required}"
+: "${GPDB5_UBUNTU18_DEB_DIR:?GPDB5_UBUNTU18_DEB_DIR is required}"
+: "${GPDB6_RHEL6_RPM_DIR:?GPDB6_RHEL6_RPM_DIR is required}"
+: "${GPDB6_RHEL7_RPM_DIR:?GPDB6_RHEL7_RPM_DIR is required}"
+: "${GPDB6_UBUNTU18_DEB_DIR:?GPDB6_UBUNTU18_DEB_DIR is required}"
 : "${PRODUCT_SLUG:?PRODUCT_SLUG is required}"
 
 pivnet_cli_repo=pivotal-cf/pivnet-cli
@@ -30,15 +33,26 @@ pivnet login "--api-token=${PIVNET_API_TOKEN}"
 
 # get version numbers in sorted order
 # https://stackoverflow.com/questions/57071166/jq-find-the-max-in-quoted-values/57071319#57071319
-version=$(pivnet --format=json releases "--product-slug=${PRODUCT_SLUG}" | jq -r 'sort_by(.version | split(".") | map(tonumber))[-1].version')
-echo "Latest version found is ${version}"
+gpdb6_version=$(pivnet --format=json releases "--product-slug=${PRODUCT_SLUG}" | jq -r 'sort_by(.version | split(".") | map(tonumber) | select(.[0] == 6))[-1].version')
+gpdb5_version=$(pivnet --format=json releases "--product-slug=${PRODUCT_SLUG}" | jq -r 'sort_by(.version | split(".") | map(tonumber) | select(.[0] == 5))[-1].version')
+echo -e "Latest GPDB versions found:\n6X:\t${gpdb6_version}\n5X:\t${gpdb5_version}"
 
 product_files=(
-	"product_files/Pivotal-Greenplum/greenplum-db-${version}-rhel6-x86_64.rpm"
-	"product_files/Pivotal-Greenplum/greenplum-db-${version}-rhel7-x86_64.rpm"
-	"product_files/Pivotal-Greenplum/greenplum-db-${version}-ubuntu18.04-amd64.deb"
+	"product_files/Pivotal-Greenplum/greenplum-db-${gpdb5_version}-rhel6-x86_64.rpm"
+	"product_files/Pivotal-Greenplum/greenplum-db-${gpdb5_version}-rhel7-x86_64.rpm"
+	"product_files/Pivotal-Greenplum/greenplum-db-${gpdb5_version}-ubuntu18.04-amd64.deb"
+	"product_files/Pivotal-Greenplum/greenplum-db-${gpdb6_version}-rhel6-x86_64.rpm"
+	"product_files/Pivotal-Greenplum/greenplum-db-${gpdb6_version}-rhel7-x86_64.rpm"
+	"product_files/Pivotal-Greenplum/greenplum-db-${gpdb6_version}-ubuntu18.04-amd64.deb"
 )
-product_dirs=("${RHEL6_RPM_DIR}" "${RHEL7_RPM_DIR}" "${UBUNTU18_DEB_DIR}")
+product_dirs=(
+	"${GPDB5_RHEL6_RPM_DIR}"
+	"${GPDB5_RHEL7_RPM_DIR}"
+	"${GPDB5_UBUNTU18_DEB_DIR}"
+	"${GPDB6_RHEL6_RPM_DIR}"
+	"${GPDB6_RHEL7_RPM_DIR}"
+	"${GPDB6_UBUNTU18_DEB_DIR}"
+)
 
 product_files_json=$(pivnet --format=json product-files "--product-slug=${PRODUCT_SLUG}" --release-version "${version}")
 for ((i = 0; i < ${#product_files[@]}; i++)); do
