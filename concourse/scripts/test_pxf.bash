@@ -17,7 +17,7 @@ function run_pg_regress() {
 		source ${GPHOME}/greenplum_path.sh
 		export GPHD_ROOT=${GPHD_ROOT}
 		export PXF_HOME=${PXF_HOME} PXF_CONF=${PXF_CONF_DIR}
-		export PGPORT=${PGPORT}
+		export PGPORT=5432
 		export HCFS_CMD=${GPHD_ROOT}/bin/hdfs
 		export HCFS_PROTOCOL=${PROTOCOL}
 		export JAVA_HOME=${JAVA_HOME}

@@ -91,7 +91,7 @@ anchors:
     - |
         limits='gpadmin soft core unlimited\ngpadmin soft nproc 131072\ngpadmin soft nofile 65536'
         echo -e "${limits}" >> /etc/security/limits.d/gpadmin-limits.conf
-        export GROUP=HdfsSmokeTest,WritableSmokeTest PGPORT=5432 PATH=${PWD}/pxf-protocol-extension_src/concourse/scripts:$PATH &&
+        export GROUP=HdfsSmokeTest,WritableSmokeTest PATH=${PWD}/pxf-protocol-extension_src/concourse/scripts:$PATH &&
         install_gpdb.bash &&
         su gpadmin "$(command -v initialize_gpdb.bash)" &&
         test_pxf.bash
