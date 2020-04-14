@@ -4,19 +4,20 @@ CONCOURSE ?= ud
 # set the pxf-protocol-extension default branch to current branch
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 
-PIPELINE_NAME              = pxf-protocol-extension-6X_STABLE
+BC_PIPELINE_NAME           = pxf-protocol-extension-BC_6X_STABLE
+PIVNET_PIPELINE_NAME       = pivnet_artifacts
 FLY_CMD                    = /usr/local/bin/fly
 FLY_OPTION_NON-INTERACTIVE =
 
-.PHONY: set
-set: set-pipeline
+.PHONY: set-BC
+set-BC: set-BC-pipeline
 
-.PHONY: set-pipeline
-set-pipeline:
+.PHONY: set-BC-pipeline
+set-BC-pipeline:
 	$(FLY_CMD) --target=$(CONCOURSE) \
 		set-pipeline \
 		--check-creds \
-		--pipeline=$(PIPELINE_NAME) \
+		--pipeline=$(BC_PIPELINE_NAME) \
 		--config=pipelines/pxf-protocol-extension_pipeline.yml \
 		--load-vars-from=$(HOME)/workspace/gp-continuous-integration/secrets/gpdb-6X_STABLE-release-secrets.prod.yml \
 		--load-vars-from=$(HOME)/workspace/gp-continuous-integration/secrets/gpdb_common-ci-secrets.yml \
@@ -29,7 +30,26 @@ set-pipeline:
 		${FLY_OPTION_NON-INTERACTIVE}
 
 	@echo using the following command to unpause the pipeline:
-	@echo "\t$(FLY_CMD) -t ${CONCOURSE} unpause-pipeline --pipeline ${PIPELINE_NAME}"
+	@echo "\t$(FLY_CMD) -t ${CONCOURSE} unpause-pipeline --pipeline ${BC_PIPELINE_NAME}"
+
+.PHONY: set-pivnet
+set-pivnet: set-pivnet-pipeline
+
+.PHONY: set-pivnet-pipeline
+set-pivnet-pipeline:
+	$(FLY_CMD) --target=$(CONCOURSE) \
+		set-pipeline \
+		--check-creds \
+		--pipeline=$(PIVNET_PIPELINE_NAME) \
+		--config=pipelines/get_pivnet_artifacts.yml \
+		--load-vars-from=$(HOME)/workspace/gp-continuous-integration/secrets/gpdb-6X_STABLE-release-secrets.prod.yml \
+		--load-vars-from=$(HOME)/workspace/gp-continuous-integration/secrets/gpdb_common-ci-secrets.yml \
+		--var=pxf-protocol-extension-git-branch=6X_STABLE_pipeline \
+		--var=pxf-protocol-extension-git-remote=https://github.com/greenplum-db/pxf-protocol-extension \
+		${FLY_OPTION_NON-INTERACTIVE}
+
+	@echo using the following command to unpause the pipeline:
+	@echo "\t$(FLY_CMD) -t ${CONCOURSE} unpause-pipeline --pipeline ${PIVNET_PIPELINE_NAME}"
 
 ## ----------------------------------------------------------------------
 ## List explicit rules

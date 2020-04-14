@@ -1,0 +1,94 @@
+---
+resource_types:
+- name: gcs
+  type: docker-image
+  source:
+    repository: frodenas/gcs-resource
+
+resources:
+
+- name: pxf-protocol-extension_src
+  type: git
+  icon: git
+  source:
+    branch: {{pxf-protocol-extension-git-branch}}
+    uri: {{pxf-protocol-extension-git-remote}}
+    private_key: ((ccp-git-key))
+
+- name: ubuntu18
+  type: docker-image
+  icon: docker
+  source:
+    repository: pivotaldata/gpdb-dev
+    tag: ubuntu18
+
+- name: pivnet_cli
+  type: gcs
+  icon: google-drive
+  source:
+    bucket: data-gpdb-ud-pivnet-artifacts
+    json_key: ((data-gpdb-ud-google-json-key))
+    versioned_file: pivotal-cf/pivnet-cli/pivnet
+    initial_version: 0
+
+- name: rhel6_rpm
+  type: gcs
+  icon: google-drive
+  source:
+    bucket: data-gpdb-ud-pivnet-artifacts
+    json_key: ((data-gpdb-ud-google-json-key))
+    regexp: latest/greenplum-db-(.*)-rhel6-x86_64.rpm
+    initial_path: latest/greenplum-db-0.0.0-rhel6-x86_64.rpm
+
+- name: rhel7_rpm
+  type: gcs
+  icon: google-drive
+  source:
+    bucket: data-gpdb-ud-pivnet-artifacts
+    json_key: ((data-gpdb-ud-google-json-key))
+    regexp: latest/greenplum-db-(.*)-rhel7-x86_64.rpm
+    initial_path: latest/greenplum-db-0.0.0-rhel7-x86_64.rpm
+
+- name: ubuntu18_deb
+  type: gcs
+  icon: google-drive
+  source:
+    bucket: data-gpdb-ud-pivnet-artifacts
+    json_key: ((data-gpdb-ud-google-json-key))
+    regexp: latest/greenplum-db-(.*)-ubuntu18.04-amd64.deb
+    initial_path: latest/greenplum-db-0.0.0-ubuntu18.04-amd64.deb
+
+jobs:
+- name: Get Greenplum Product Files
+  plan:
+  - in_parallel:
+    - get: pxf-protocol-extension_src
+      trigger: true
+    - get: ubuntu18
+    - get: pivnet_cli
+    - get: rhel6_rpm
+    - get: rhel7_rpm
+    - get: ubuntu18_deb
+  - task: Get Greenplum Product Files
+    # this task will fail on centos6
+    image: ubuntu18
+    file: pxf-protocol-extension_src/concourse/tasks/get_product_files.yml
+    params:
+      PIVNET_API_TOKEN: {{public_pivnet_refresh_token}}
+      PIVNET_CLI_DIR: pivnet_cli
+      RHEL6_RPM_DIR: rhel6_rpm
+      RHEL7_RPM_DIR: rhel7_rpm
+      UBUNTU18_DEB_DIR: ubuntu18_deb
+  - in_parallel:
+    - put: pivnet_cli
+      params:
+        file: pivnet_cli/pivnet
+    - put: rhel6_rpm
+      params:
+        file: rhel6_rpm/greenplum-db-*-rhel6-x86_64.rpm
+    - put: rhel7_rpm
+      params:
+        file: rhel7_rpm/greenplum-db-*-rhel7-x86_64.rpm
+    - put: ubuntu18_deb
+      params:
+        file: ubuntu18_deb/greenplum-db-*-ubuntu18.04-amd64.deb

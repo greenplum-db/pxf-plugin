@@ -2,9 +2,7 @@
 
 set -exuo pipefail
 
-: "${BIN_GPDB_DIR:?BIN_GPDB_DIR must be set}"
-GPHOME=/usr/local/greenplum-db-devel
-# sed -ie "s|^GPHOME=.*$|GPHOME=${GPHOME}|" "${GPHOME}/greenplum_path.sh"
+GPHOME=/usr/local/greenplum-db
 PYTHONHOME='' source "${GPHOME}/greenplum_path.sh"
 
 # Create config and data dirs.

@@ -91,10 +91,8 @@ anchors:
     - |
         limits='gpadmin soft core unlimited\ngpadmin soft nproc 131072\ngpadmin soft nofile 65536'
         echo -e "${limits}" >> /etc/security/limits.d/gpadmin-limits.conf
-        BIN_GPDB_DIR=$(mktemp -d) &&
-        export BIN_GPDB_DIR PATH=${PWD}/pxf-protocol-extension_src/concourse/scripts:$PATH &&
-        extract_pxf.bash &&
-        install_pxf_protocol_extension.bash &&
+        export GROUP=HdfsSmokeTest,WritableSmokeTest PGPORT=5432 PATH=${PWD}/pxf-protocol-extension_src/concourse/scripts:$PATH &&
+        install_gpdb.bash &&
         su gpadmin "$(command -v initialize_gpdb.bash)" &&
         test_pxf.bash
 
@@ -124,8 +122,6 @@ jobs:
       - name: rhel6_rpm
       params:
         GPDB_PKG_DIR: rhel6_rpm
-        GROUP: HdfsSmokeTest,WritableSmokeTest
-        PGPORT: 5432
         PXF_PROTOCOL_EXTENSION_SRC: pxf-protocol-extension_src
 
 - name: Test PXF Protocol Extension On RHEL7
@@ -149,8 +145,6 @@ jobs:
       - name: rhel7_rpm
       params:
         GPDB_PKG_DIR: rhel7_rpm
-        GROUP: HdfsSmokeTest,WritableSmokeTest
-        PGPORT: 5432
         PXF_PROTOCOL_EXTENSION_SRC: pxf-protocol-extension_src
 
 - name: Test PXF Protocol Extension On Ubuntu18
@@ -174,6 +168,4 @@ jobs:
       - name: ubuntu18_deb
       params:
         GPDB_PKG_DIR: ubuntu18_deb
-        GROUP: HdfsSmokeTest,WritableSmokeTest
-        PGPORT: 5432
         PXF_PROTOCOL_EXTENSION_SRC: pxf-protocol-extension_src

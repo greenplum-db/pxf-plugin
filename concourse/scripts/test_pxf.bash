@@ -1,9 +1,8 @@
 #!/usr/bin/env bash
 
-: "${BIN_GPDB_DIR:?BIN_GPDB_DIR must be set}"
 : "${PGPORT:?PGPORT must be set}"
 : "${GROUP:?GROUP must be set}"
-export GPHOME=/usr/local/greenplum-db-devel
+export GPHOME=/usr/local/greenplum-db
 source "${GPHOME}/greenplum_path.sh"
 PXF_HOME=${GPHOME}/pxf
 PXF_CONF_DIR=~gpadmin/pxf
