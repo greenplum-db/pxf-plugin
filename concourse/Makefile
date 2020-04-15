@@ -4,10 +4,32 @@ CONCOURSE ?= ud
 # set the pxf-protocol-extension default branch to current branch
 BRANCH ?= $(shell git rev-parse --abbrev-ref HEAD)
 
+BUILD_PIPELINE_NAME        = pxf-protocol-extension-build_6X_STABLE
 BC_PIPELINE_NAME           = pxf-protocol-extension-BC_6X_STABLE
 PIVNET_PIPELINE_NAME       = pivnet_artifacts
 FLY_CMD                    = /usr/local/bin/fly
 FLY_OPTION_NON-INTERACTIVE =
+
+.PHONY: set-build
+set-build: set-build-pipeline
+
+.PHONY: set-build-pipeline
+set-build-pipeline:
+	$(FLY_CMD) --target=$(CONCOURSE) \
+		set-pipeline \
+		--check-creds \
+		--pipeline=$(BUILD_PIPELINE_NAME) \
+		--config=pipelines/build_pipeline.yml \
+		--load-vars-from=$(HOME)/workspace/gp-continuous-integration/secrets/gpdb-6X_STABLE-release-secrets.prod.yml \
+		--load-vars-from=$(HOME)/workspace/gp-continuous-integration/secrets/gpdb_common-ci-secrets.yml \
+		--var=pxf-protocol-extension-git-branch=6X_STABLE_pipeline \
+		--var=pxf-protocol-extension-git-remote=https://github.com/greenplum-db/pxf-protocol-extension \
+		--var=folder-prefix=prod/gpdb_branch \
+		--var=gpdb-branch=6X_STABLE \
+		${FLY_OPTION_NON-INTERACTIVE}
+
+	@echo using the following command to unpause the pipeline:
+	@echo "\t$(FLY_CMD) -t ${CONCOURSE} unpause-pipeline --pipeline ${BUILD_PIPELINE_NAME}"
 
 .PHONY: set-BC
 set-BC: set-BC-pipeline

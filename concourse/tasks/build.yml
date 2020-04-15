@@ -1,0 +1,15 @@
+---
+platform: linux
+
+image_resource:
+  type: docker-image
+
+inputs:
+- name: pxf-protocol-extension_src
+- name: gpdb_package
+
+outputs:
+- name: dist
+
+run:
+  path: pxf-protocol-extension_src/concourse/scripts/build.bash
