@@ -13,7 +13,7 @@ outputs:
 
 params:
   TARGET_OS:
-  TARGET_ARCH:
+  TARGET_AR:
 
 run:
   path: pxf-protocol-extension_src/concourse/scripts/build.bash

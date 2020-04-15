@@ -3,7 +3,7 @@
 set -eox pipefail
 
 : "${TARGET_OS:?TARGET_OS must be set}"
-: "${TARGET_ARCH:?TARGET_ARCH must be set}"
+: "${TARGET_AR:?TARGET_AR must be set}"
 
 GPDB_PKG_DIR=gpdb_package
 GPDB_VERSION=$(<"${GPDB_PKG_DIR}/version")
@@ -41,7 +41,7 @@ function package_pxf_protocol_extension() {
     popd > /dev/null
 
     # establish OS-specific package name
-    local package_name=ppe-gpdb${GPDB_MAJOR_VERSION}-${PPE_VERSION}-${TARGET_OS}-${TARGET_ARCH}
+    local package_name=ppe-gpdb${GPDB_MAJOR_VERSION}-${PPE_VERSION}-${TARGET_OS}-${TARGET_AR}
 
     # prepare directory layout for artifacts
     mkdir -p dist/${package_name}/{lib/postgresql,share/postgresql/extension}
