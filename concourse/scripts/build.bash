@@ -52,7 +52,9 @@ function package_pxf_protocol_extension() {
     cp pxf-protocol-extension_src/{commit.sha,version,concourse/scripts/install_component.bash} dist/${package_name}
 
     # package artifacts into a tarball
-    tar cvzf dist/${package_name}.tar.gz dist/${package_name}
+    pushd pxf-protocol-extension_src > /dev/null
+    tar cvzf ${package_name}.tar.gz ${package_name}
+    popd > /dev/null
 
     # verify contents
     ls -al dist
