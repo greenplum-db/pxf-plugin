@@ -29,7 +29,6 @@ resources:
     bucket: data-gpdb-ud-pivnet-artifacts
     json_key: ((data-gpdb-ud-google-json-key))
     versioned_file: pivotal-cf/pivnet-cli/pivnet
-    initial_version: 0
 
 - name: gpdb5_rhel6_rpm
   type: gcs
@@ -38,7 +37,6 @@ resources:
     bucket: data-gpdb-ud-pivnet-artifacts
     json_key: ((data-gpdb-ud-google-json-key))
     regexp: latest_gpdb5/greenplum-db-(.*)-rhel6-x86_64.rpm
-    initial_path: latest_gpdb5/greenplum-db-0.0.0-rhel6-x86_64.rpm
 
 - name: gpdb5_rhel7_rpm
   type: gcs
@@ -48,15 +46,6 @@ resources:
     json_key: ((data-gpdb-ud-google-json-key))
     regexp: latest_gpdb5/greenplum-db-(.*)-rhel7-x86_64.rpm
     initial_path: latest_gpdb5/greenplum-db-0.0.0-rhel7-x86_64.rpm
-
-- name: gpdb5_ubuntu18_deb
-  type: gcs
-  icon: google-drive
-  source:
-    bucket: data-gpdb-ud-pivnet-artifacts
-    json_key: ((data-gpdb-ud-google-json-key))
-    regexp: latest_gpdb5/greenplum-db-(.*)-ubuntu18.04-amd64.deb
-    initial_path: latest_gpdb5/greenplum-db-0.0.0-ubuntu18.04-amd64.deb
 
 - name: gpdb6_rhel6_rpm
   type: gcs
@@ -95,7 +84,6 @@ jobs:
     - get: pivnet_cli
     - get: gpdb5_rhel6_rpm
     - get: gpdb5_rhel7_rpm
-    - get: gpdb5_ubuntu18_deb
     - get: gpdb6_rhel6_rpm
     - get: gpdb6_rhel7_rpm
     - get: gpdb6_ubuntu18_deb
@@ -106,7 +94,6 @@ jobs:
     params:
       GPDB5_RHEL6_RPM_DIR: gpdb5_rhel6_rpm
       GPDB5_RHEL7_RPM_DIR: gpdb5_rhel7_rpm
-      GPDB5_UBUNTU18_DEB_DIR: gpdb5_ubuntu18_deb
       GPDB6_RHEL6_RPM_DIR: gpdb6_rhel6_rpm
       GPDB6_RHEL7_RPM_DIR: gpdb6_rhel7_rpm
       GPDB6_UBUNTU18_DEB_DIR: gpdb6_ubuntu18_deb
@@ -122,9 +109,6 @@ jobs:
     - put: gpdb5_rhel7_rpm
       params:
         file: gpdb5_rhel7_rpm/greenplum-db-*-rhel7-x86_64.rpm
-    - put: gpdb5_ubuntu18_deb
-      params:
-        file: gpdb5_ubuntu18_deb/greenplum-db-*-ubuntu18.04-amd64.deb
     - put: gpdb6_rhel6_rpm
       params:
         file: gpdb6_rhel6_rpm/greenplum-db-*-rhel6-x86_64.rpm

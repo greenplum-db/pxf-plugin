@@ -6,7 +6,6 @@ set -e
 : "${PIVNET_CLI_DIR:?PIVNET_CLI_DIR is required}"
 : "${GPDB5_RHEL6_RPM_DIR:?GPDB5_RHEL6_RPM_DIR is required}"
 : "${GPDB5_RHEL7_RPM_DIR:?GPDB5_RHEL7_RPM_DIR is required}"
-: "${GPDB5_UBUNTU18_DEB_DIR:?GPDB5_UBUNTU18_DEB_DIR is required}"
 : "${GPDB6_RHEL6_RPM_DIR:?GPDB6_RHEL6_RPM_DIR is required}"
 : "${GPDB6_RHEL7_RPM_DIR:?GPDB6_RHEL7_RPM_DIR is required}"
 : "${GPDB6_UBUNTU18_DEB_DIR:?GPDB6_UBUNTU18_DEB_DIR is required}"
@@ -40,7 +39,6 @@ echo -e "Latest GPDB versions found:\n6X:\t${gpdb6_version}\n5X:\t${gpdb5_versio
 product_files=(
 	"product_files/Pivotal-Greenplum/greenplum-db-${gpdb5_version}-rhel6-x86_64.rpm"
 	"product_files/Pivotal-Greenplum/greenplum-db-${gpdb5_version}-rhel7-x86_64.rpm"
-	"product_files/Pivotal-Greenplum/greenplum-db-${gpdb5_version}-ubuntu18.04-amd64.deb"
 	"product_files/Pivotal-Greenplum/greenplum-db-${gpdb6_version}-rhel6-x86_64.rpm"
 	"product_files/Pivotal-Greenplum/greenplum-db-${gpdb6_version}-rhel7-x86_64.rpm"
 	"product_files/Pivotal-Greenplum/greenplum-db-${gpdb6_version}-ubuntu18.04-amd64.deb"
@@ -48,16 +46,22 @@ product_files=(
 product_dirs=(
 	"${GPDB5_RHEL6_RPM_DIR}"
 	"${GPDB5_RHEL7_RPM_DIR}"
-	"${GPDB5_UBUNTU18_DEB_DIR}"
 	"${GPDB6_RHEL6_RPM_DIR}"
 	"${GPDB6_RHEL7_RPM_DIR}"
 	"${GPDB6_UBUNTU18_DEB_DIR}"
 )
 
-product_files_json=$(pivnet --format=json product-files "--product-slug=${PRODUCT_SLUG}" --release-version "${version}")
+gpdb5_product_files_json=$(pivnet --format=json product-files "--product-slug=${PRODUCT_SLUG}" --release-version "${gpdb5_version}")
+gpdb6_product_files_json=$(pivnet --format=json product-files "--product-slug=${PRODUCT_SLUG}" --release-version "${gpdb6_version}")
 for ((i = 0; i < ${#product_files[@]}; i++)); do
 	file=${product_files[$i]}
 	download_path=${product_dirs[$i]}/${file##*/}
+	version=${gpdb5_version}
+	product_files_json=${gpdb5_product_files_json}
+	if [[ ${file} =~ ${gpdb6_version} ]]; then
+		version=${gpdb6_version}
+		product_files_json=${gpdb6_product_files_json}
+	fi
 	if [[ -e ${download_path} ]]; then
 		echo "Found file ${download_path}, checking sha256sum..."
 		sha256=$(jq <<<"${product_files_json}" -r --arg object_key "${file}" '.[] | select(.aws_object_key == $object_key).sha256')

@@ -9,7 +9,6 @@ inputs:
 - name: pivnet_cli
 - name: gpdb5_rhel6_rpm
 - name: gpdb5_rhel7_rpm
-- name: gpdb5_ubuntu18_deb
 - name: gpdb6_rhel6_rpm
 - name: gpdb6_rhel7_rpm
 - name: gpdb6_ubuntu18_deb
@@ -18,7 +17,6 @@ outputs:
 - name: pivnet_cli
 - name: gpdb5_rhel6_rpm
 - name: gpdb5_rhel7_rpm
-- name: gpdb5_ubuntu18_deb
 - name: gpdb6_rhel6_rpm
 - name: gpdb6_rhel7_rpm
 - name: gpdb6_ubuntu18_deb
