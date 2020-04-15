@@ -1,26 +1,31 @@
 #!/usr/bin/env bash
 
-set -eoux pipefail
+set -eox pipefail
+
+: "${TARGET_OS:?TARGET_OS must be set}"
+: "${TARGET_ARCH:?TARGET_ARCH must be set}"
 
 GPDB_PKG_DIR=gpdb_package
 GPDB_VERSION=$(<"${GPDB_PKG_DIR}/version")
+GPDB_MAJOR_VERSION=${GPDB_VERSION:0:1}
 GPHOME=/usr/local/greenplum-db-${GPDB_VERSION}
+PPE_VERSION=1.0.0
 
 function install_gpdb() {
-    if command -v rpm; then
+    if [[ ${TARGET_OS} == rhel* ]]; then
 	    rpm --quiet -ivh "${GPDB_PKG_DIR}/greenplum-db-${GPDB_VERSION}"-rhel*-x86_64.rpm
-    elif command -v apt; then
+    elif [[ ${TARGET_OS} == ubuntu* ]]; then
 	    # apt wants a full path
 	    apt install -qq "${PWD}/${GPDB_PKG_DIR}/greenplum-db-${GPDB_VERSION}-ubuntu18.04-amd64.deb"
     else
-	    echo "Cannot install RPM or DEB from ${GPDB_PKG_DIR}, no rpm or apt command available in this environment. Exiting..."
+	    echo "Unsupported operating system ${TARGET_OS}. Exiting..."
 	    exit 1
     fi
 }
 
 function compile_pxf_protocol_extension() {
     source "${GPHOME}/greenplum_path.sh"
-    if grep 'CentOS release 6' /etc/centos-release >/dev/null; then
+    if [[ ${TARGET_OS} == "rhel6" ]]; then
 	    source /opt/gcc_env.sh
     fi
 
@@ -28,7 +33,30 @@ function compile_pxf_protocol_extension() {
 }
 
 function package_pxf_protocol_extension() {
-    echo "all the way !!"
+
+    # store latest commit SHA
+    pushd pxf-protocol-extension_src > /dev/null
+    echo $(git rev-parse --verify HEAD) > commit.sha
+    echo ${PPE_VERSION} > version
+    popd > /dev/null
+
+    # establish OS-specific package name
+    local package_name=ppe-gpdb${GPDB_MAJOR_VERSION}-${PPE_VERSION}-${TARGET_OS}-${TARGET_ARCH}
+
+    # prepare directory layout for artifacts
+    mkdir -p dist/${package_name}/{lib/postgresql,share/postgresql/extension}
+
+    # place artifacts into appropriate locations
+    cp pxf-protocol-extension_src/pxf.so dist/${package_name}/lib/postgresql/
+    cp pxf-protocol-extension_src/pxf*.{sql,control} dist/${package_name}/share/postgresql/extension/
+    cp pxf-protocol-extension_src/{commit.sha,version,concourse/scripts/install_component.bash} dist/${package_name}
+
+    # package artifacts into a tarball
+    tar cvzf dist/${package_name}.tar.gz dist/${package_name}
+
+    # verify contents
+    ls -al dist
+    tar -tvzf dist/${package_name}.tar.gz
 }
 
 install_gpdb

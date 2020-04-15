@@ -11,5 +11,9 @@ inputs:
 outputs:
 - name: dist
 
+params:
+  TARGET_OS:
+  TARGET_ARCH:
+
 run:
   path: pxf-protocol-extension_src/concourse/scripts/build.bash

@@ -85,6 +85,9 @@ jobs:
   - task: Build PPE on RHEL6
     image: gpdb-pxf-dev-centos6
     file: pxf-protocol-extension_src/concourse/tasks/build.yml
+    params:
+      TARGET_OS: rhel6
+      TARGET_ARCH: x86_64
 
 - name: Build PPE on RHEL7
   plan:
@@ -97,6 +100,9 @@ jobs:
   - task: Build PPE on RHEL7
     image: gpdb-pxf-dev-centos7
     file: pxf-protocol-extension_src/concourse/tasks/build.yml
+    params:
+      TARGET_OS: rhel7
+      TARGET_ARCH: x86_64
 
 - name: Build PPE on Ubuntu18
   plan:
@@ -109,3 +115,7 @@ jobs:
   - task: Build PPE on Ubuntu18
     image: gpdb-pxf-dev-ubuntu18
     file: pxf-protocol-extension_src/concourse/tasks/build.yml
+    params:
+      TARGET_OS: ubuntu18.04
+      TARGET_ARCH: amd64
+
