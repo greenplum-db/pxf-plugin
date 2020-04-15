@@ -4,14 +4,14 @@ set -eoux pipefail
 
 GPDB_PKG_DIR=gpdb_package
 GPDB_VERSION=$(<"${GPDB_PKG_DIR}/version")
-GPHOME=/usr/local/greenplum-db-${version}
+GPHOME=/usr/local/greenplum-db-${GPDB_VERSION}
 
 function install_gpdb() {
     if command -v rpm; then
-	    rpm --quiet -ivh "${GPDB_PKG_DIR}/greenplum-db-${version}"-rhel*-x86_64.rpm
+	    rpm --quiet -ivh "${GPDB_PKG_DIR}/greenplum-db-${GPDB_VERSION}"-rhel*-x86_64.rpm
     elif command -v apt; then
 	    # apt wants a full path
-	    apt install -qq "${PWD}/${GPDB_PKG_DIR}/greenplum-db-${version}-ubuntu18.04-amd64.deb"
+	    apt install -qq "${PWD}/${GPDB_PKG_DIR}/greenplum-db-${GPDB_VERSION}-ubuntu18.04-amd64.deb"
     else
 	    echo "Cannot install RPM or DEB from ${GPDB_PKG_DIR}, no rpm or apt command available in this environment. Exiting..."
 	    exit 1
