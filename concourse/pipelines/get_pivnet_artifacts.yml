@@ -104,14 +104,14 @@ jobs:
     image: ubuntu18
     file: pxf-protocol-extension_src/concourse/tasks/get_product_files.yml
     params:
-      PIVNET_API_TOKEN: {{public_pivnet_refresh_token}}
-      PIVNET_CLI_DIR: pivnet_cli
       GPDB5_RHEL6_RPM_DIR: gpdb5_rhel6_rpm
       GPDB5_RHEL7_RPM_DIR: gpdb5_rhel7_rpm
       GPDB5_UBUNTU18_DEB_DIR: gpdb5_ubuntu18_deb
-      GPDB6_RHEL6_RPM_DIR: gpdb5_rhel6_rpm
-      GPDB6_RHEL7_RPM_DIR: gpdb5_rhel7_rpm
-      GPDB6_UBUNTU18_DEB_DIR: gpdb5_ubuntu18_deb
+      GPDB6_RHEL6_RPM_DIR: gpdb6_rhel6_rpm
+      GPDB6_RHEL7_RPM_DIR: gpdb6_rhel7_rpm
+      GPDB6_UBUNTU18_DEB_DIR: gpdb6_ubuntu18_deb
+      PIVNET_API_TOKEN: {{public_pivnet_refresh_token}}
+      PIVNET_CLI_DIR: pivnet_cli
   - in_parallel:
     - put: pivnet_cli
       params:
