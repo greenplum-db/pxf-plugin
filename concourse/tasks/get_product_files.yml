@@ -7,15 +7,21 @@ image_resource:
 inputs:
 - name: pxf-protocol-extension_src
 - name: pivnet_cli
-- name: rhel6_rpm
-- name: rhel7_rpm
-- name: ubuntu18_deb
+- name: gpdb5_rhel6_rpm
+- name: gpdb5_rhel7_rpm
+- name: gpdb5_ubuntu18_deb
+- name: gpdb6_rhel6_rpm
+- name: gpdb6_rhel7_rpm
+- name: gpdb6_ubuntu18_deb
 
 outputs:
 - name: pivnet_cli
-- name: rhel6_rpm
-- name: rhel7_rpm
-- name: ubuntu18_deb
+- name: gpdb5_rhel6_rpm
+- name: gpdb5_rhel7_rpm
+- name: gpdb5_ubuntu18_deb
+- name: gpdb6_rhel6_rpm
+- name: gpdb6_rhel7_rpm
+- name: gpdb6_ubuntu18_deb
 
 params:
   PIVNET_API_TOKEN:
