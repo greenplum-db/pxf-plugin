@@ -105,16 +105,16 @@ jobs:
         file: pivnet_cli/pivnet
     - put: gpdb5_rhel6_rpm
       params:
-        file: gpdb5_rhel6_rpm/greenplum-db-*-rhel6-x86_64.rpm
+        file: gpdb5_rhel6_rpm/greenplum-db-5.*-rhel6-x86_64.rpm
     - put: gpdb5_rhel7_rpm
       params:
-        file: gpdb5_rhel7_rpm/greenplum-db-*-rhel7-x86_64.rpm
+        file: gpdb5_rhel7_rpm/greenplum-db-5.*-rhel7-x86_64.rpm
     - put: gpdb6_rhel6_rpm
       params:
-        file: gpdb6_rhel6_rpm/greenplum-db-*-rhel6-x86_64.rpm
+        file: gpdb6_rhel6_rpm/greenplum-db-6.*-rhel6-x86_64.rpm
     - put: gpdb6_rhel7_rpm
       params:
-        file: gpdb6_rhel7_rpm/greenplum-db-*-rhel7-x86_64.rpm
+        file: gpdb6_rhel7_rpm/greenplum-db-6.*-rhel7-x86_64.rpm
     - put: gpdb6_ubuntu18_deb
       params:
-        file: gpdb6_ubuntu18_deb/greenplum-db-*-ubuntu18.04-amd64.deb
+        file: gpdb6_ubuntu18_deb/greenplum-db-6.*-ubuntu18.04-amd64.deb
