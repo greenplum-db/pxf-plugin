@@ -60,6 +60,7 @@ resources:
     json_key: ((data-gpdb-ud-google-json-key))
     regexp: latest/greenplum-db-(.*)-rhel7-x86_64.rpm
 
+{% if gpdb_type == "6X_STABLE" %}
 - name: ubuntu18_deb
   type: gcs
   icon: google-drive
@@ -67,6 +68,7 @@ resources:
     bucket: data-gpdb-ud-pivnet-artifacts
     json_key: ((data-gpdb-ud-google-json-key))
     regexp: latest/greenplum-db-(.*)-ubuntu18.04-amd64.deb
+{% endif %}
 
 - name: pxf_tarball
   type: s3
@@ -146,6 +148,7 @@ jobs:
       params:
         GPDB_PKG_DIR: rhel7_rpm
 
+{% if gpdb_type == "6X_STABLE" %}
 - name: Test PXF Protocol Extension On Ubuntu18
   plan:
   - in_parallel:
@@ -167,3 +170,4 @@ jobs:
       - name: ubuntu18_deb
       params:
         GPDB_PKG_DIR: ubuntu18_deb
+{% endif gpdb6 %}

@@ -4,6 +4,7 @@ set -e
 
 : "${PIVNET_API_TOKEN:?PIVNET_API_TOKEN is required}"
 : "${PIVNET_CLI_DIR:?PIVNET_CLI_DIR is required}"
+: "${VERSION_BEFORE_LATEST:?VERSIONS_BEFORE_LATEST is required}"
 : "${GPDB5_RHEL6_RPM_DIR:?GPDB5_RHEL6_RPM_DIR is required}"
 : "${GPDB5_RHEL7_RPM_DIR:?GPDB5_RHEL7_RPM_DIR is required}"
 : "${GPDB6_RHEL6_RPM_DIR:?GPDB6_RHEL6_RPM_DIR is required}"
@@ -32,9 +33,17 @@ pivnet login "--api-token=${PIVNET_API_TOKEN}"
 
 # get version numbers in sorted order
 # https://stackoverflow.com/questions/57071166/jq-find-the-max-in-quoted-values/57071319#57071319
-gpdb6_version=$(pivnet --format=json releases "--product-slug=${PRODUCT_SLUG}" | jq -r 'sort_by(.version | split(".") | map(tonumber) | select(.[0] == 6))[-1].version')
-gpdb5_version=$(pivnet --format=json releases "--product-slug=${PRODUCT_SLUG}" | jq -r 'sort_by(.version | split(".") | map(tonumber) | select(.[0] == 5))[-1].version')
-echo -e "Latest GPDB versions found:\n6X:\t${gpdb6_version}\n5X:\t${gpdb5_version}"
+gpdb6_version=$(
+	pivnet --format=json releases "--product-slug=${PRODUCT_SLUG}" | \
+		jq --raw-output --argjson m "${VERSION_BEFORE_LATEST}" \
+		'sort_by(.version | split(".") | map(tonumber) | select(.[0] == 6))[-1-$m].version'
+)
+gpdb5_version=$(
+	pivnet --format=json releases "--product-slug=${PRODUCT_SLUG}" | \
+		jq --raw-output --argjson m "${VERSION_BEFORE_LATEST}" \
+		'sort_by(.version | split(".") | map(tonumber) | select(.[0] == 5))[-1-$m].version'
+)
+echo -e "Latest - ${VERSIONS_BEFORE_LATEST} GPDB versions found:\n6X:\t${gpdb6_version}\n5X:\t${gpdb5_version}"
 
 product_files=(
 	"product_files/Pivotal-Greenplum/greenplum-db-${gpdb5_version}-rhel6-x86_64.rpm"
